@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--扫描service包所有使用注解的类型-->
+    <context:component-scan base-package="com.neuq.info.service"/>
+    <!--配置事务管理器-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <!--属性注入-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--配置基于注解的声明式事务
+        默认使用注解来管理事务行为-->
+
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <bean id="secretUrl" class="com.neuq.info.common.constant.SecretUrl">
+        <property name="url">
+            <list>
+                <value>http://dummyimage.com/50x50</value>
+                <value>http://dummyimage.com/50x50</value>
+                <value>http://dummyimage.com/50x50</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="wxConfig" class="java.util.HashMap">
+        <constructor-arg>
+            <map>
+                <entry key="appId" value="${wx.appId}"/>
+                <entry key="secret" value="${wx.secret}"/>
+                <entry key="grantType" value="${wx.grantType}"/>
+                <entry key="sessionHost" value="${wx.sessionHost}"/>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean name="swaggerConfig" class="com.neuq.info.common.api.SwaggerConfig"></bean>
+
+
+    <!--<bean id="wxConfig" class="org.springframework.beans.factory.config.MapFactoryBean">-->
+        <!--<property name="sourceMap">-->
+            <!--<map>-->
+                <!--<entry key="appId" value="${wx.appId}"/>-->
+                <!--<entry key="secret" value="${wx.secret}"/>-->
+                <!--<entry key="grantType" value="${wx.grantType}"/>-->
+                <!--<entry key="sessionHost" value="${wx.sessionHost}"/>-->
+            <!--</map>-->
+        <!--</property>-->
+    <!--</bean>-->
+
+</beans>
