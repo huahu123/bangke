@@ -1,6 +1,8 @@
 package com.neuq.info.web;
 import com.neuq.info.common.utils.DateTimeUtil;
 import com.neuq.info.common.utils.NeiborUtil;
+import com.neuq.info.dto.Order1Dto;
+import com.neuq.info.dto.OrderDto;
 import com.neuq.info.dto.ResultModel;
 import com.neuq.info.entity.Order;
 import com.neuq.info.enums.ResultStatus;
@@ -93,7 +95,7 @@ public class OrderController {
         return new ResultModel(ResultStatus.SUCCESS);
     }
 
-    //创建订单  写的太烂了 我也不知道为什么注解没效果 妈的
+    //客户提交订单
     @ApiOperation(value = "创建订单")
     @RequestMapping(value = "/CreateOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
@@ -145,6 +147,16 @@ public class OrderController {
         int flag = orderService.createOrder(order);
         if (flag == 0)
             return new ResultModel(ResultStatus.ORDER_CREATE_FAIL);
+        return new ResultModel(ResultStatus.SUCCESS);
+    }
+
+    @ApiOperation(value = "测试创建订单")
+    @RequestMapping(value = "/testCreateOrder", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+    @ResponseBody
+    public ResultModel createOrder(@RequestBody Order1Dto order1Dto) {
+
+        System.out.println(order1Dto.orderId + " " + order1Dto.longitude);
+
         return new ResultModel(ResultStatus.SUCCESS);
     }
 
