@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neuq.info.common.aes.AES;
 import com.neuq.info.dao.UserDao;
 import com.neuq.info.entity.User;
-import com.neuq.info.enums.ErrorStatus;
 import com.neuq.info.service.UserService;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,11 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+    @Override
+    public User queryUserByUserId(Long userId) {
+        User user = userDao.queryUserByUserId(userId) == null ? null : userDao.queryUserByUserId(userId);
+        return user;
+    }
 
     public int updateUser(User user) {
         int res = userDao.updateUser(user);

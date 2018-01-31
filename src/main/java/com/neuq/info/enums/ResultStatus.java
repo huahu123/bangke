@@ -15,7 +15,13 @@ public enum ResultStatus {
     USER_NOT_LOGIN(-1003, "用户未登录"),
     REPEAT_LIKE(-1004,"重复点赞"),
     REPEAT_UNLIKE(-1005,"重复取消赞"),
-    NO_PERMISSION(-1006,"当前用户没有操作权限");
+    NO_PERMISSION(-1006,"当前用户没有操作权限"),
+
+    //订单相关
+    ORDER_CREATE_FAIL(-2001, "创建订单失败"),
+    ORDER_SEARCH_FAIL(-2002, "查询订单失败"),
+    ORDER_SUBMIT_FAIL(-2003, "订单加入失败"),
+    ORDER_NOT_FOUND(-2003, "订单不存在");
 
 
     /**

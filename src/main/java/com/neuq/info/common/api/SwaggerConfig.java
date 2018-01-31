@@ -26,10 +26,10 @@ public class SwaggerConfig {
 	}
 	private ApiInfo apiInfo() {
 		return new ApiInfoBuilder()
-				.title("NEUQ-INFO后台服务API")
-				.description("NEUQ校园服务平台")
+				.title("同城帮客服务端")
+				.description("服务端API")
 				.termsOfServiceUrl("https://info.hhml.online")
-				.contact("李航")
+				.contact("同城帮客")
 				.version("1.0").build();
 	}
 }

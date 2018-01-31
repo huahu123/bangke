@@ -48,7 +48,7 @@ public class WxController {
 
     @ApiImplicitParams({
             @ApiImplicitParam(name = "code", value = "小程序登录时获取的code", paramType = "query", dataType = "string")
-    })
+        }) //这个是swagger的注解
     @ResponseBody
     public Map<String, Object> createSssion(@RequestParam(required = true, value = "code") String wxCode) {
         Map<String, Object> wxSessionMap = wxService.getWxSession(wxCode);
@@ -61,10 +61,12 @@ public class WxController {
             return rtnParam(ErrorStatus.failed_get_WeChat_session_key, null);
         }
         String wxOpenId = (String) wxSessionMap.get("openid");
+        System.out.println("openid= " + wxOpenId);
         String wxSessionKey = (String) wxSessionMap.get("session_key");
-        System.out.println(wxSessionKey);
+        System.out.println("session_key= " + wxSessionKey);
         Long expires = Long.valueOf(String.valueOf(wxSessionMap.get("expires_in")));
-        String thirdSession = wxService.create3rdSession(wxOpenId, wxSessionKey, expires);
+        String thirdSession = wxService.create3rdSession(wxOpenId, wxSessionKey, expires); //thirdSession为key，存储在redis中
+        System.out.println("thirdSession= " + thirdSession);
         Map<String, String> map = new HashMap<String, String>();
         map.put("sessionId", thirdSession);
         return rtnParam(ErrorStatus.exist, map);
@@ -113,17 +115,16 @@ public class WxController {
      * @return
      */
     @RequestMapping(value = "/decodeUserInfo", method = RequestMethod.POST, produces = "application/json")
-    @ApiOperation(notes = "解析用户数据", httpMethod = "POST", value = "解析用户数据")
+    @ApiOperation(notes = "解析用户数据", httpMethod = "GET", value = "解析用户数据")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "encryptedData", value = "用户加密数据", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "iv", value = "加密算法的初始向量", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "session", value = "登陆后返回的3rd_session", required = true, paramType = "header", dataType = "string")
     })
-
     @ResponseBody
     public Map<String, Object> decodeUserInfo(@RequestParam(required = true, value = "encryptedData") String encryptedData,
                                               @RequestParam(required = true, defaultValue = "iv") String iv, HttpServletRequest request) {
-        String sessionKey = (String) request.getAttribute("sessionKey");
+       String sessionKey = (String) request.getAttribute("sessionKey");
         String openId = (String) request.getAttribute("openId");
 
         User user = userService.queryUserByOpenId(openId);

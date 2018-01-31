@@ -29,7 +29,7 @@ public class WxServiceImpl implements WxService {
         sb.append("&secret=").append(wxConfig.get("secret"));
         sb.append("&js_code=").append(wxCode);
         sb.append("&grant_type=").append(wxConfig.get("grantType"));
-        String res = HttpUtil.sendGet((String) wxConfig.get("sessionHost"), sb.toString());
+        String res = HttpUtil.sendGet((String)wxConfig.get("sessionHost"), sb.toString());
         if (res == null || res.equals("")) {
             return null;
         }

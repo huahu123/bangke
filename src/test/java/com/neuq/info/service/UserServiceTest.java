@@ -31,10 +31,10 @@ public class UserServiceTest {
     @Test
     public void updateUser() throws Exception {
         User user=new User();
-        user.setOpenId("openid1");
-        user.setAvatarUrl("111");
-        user.setNickName("222");
-        user.setGender(2);
+        user.setOpenid("openid1");
+        user.setAvatarurl("111");
+        user.setNickname("222");
+        user.setGender((byte)2);
         userService.updateUser(user);
     }
 

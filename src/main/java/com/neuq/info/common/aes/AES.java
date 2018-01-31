@@ -78,7 +78,7 @@ public class AES {
     public static void main(String[] args) {
         //明文
         String plainTextString = "Hello,Bouncy Castle";
-        System.out.println("明文 : "+plainTextString);
+        System.out.println("明文 : "+ plainTextString);
         byte[] key;
         try {
             //初始化密钥

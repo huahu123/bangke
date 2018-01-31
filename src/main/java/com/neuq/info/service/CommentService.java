@@ -9,5 +9,4 @@ public interface CommentService {
     ResultModel queryComment(long postid,long userId);
     ResultModel addComment(String content,long fromUserId,long postid,int level,long pCommentId,long toUserId);
     ResultModel delComment(long commentId,long userId);
-
 }

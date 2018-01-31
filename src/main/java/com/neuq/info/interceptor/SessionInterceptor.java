@@ -4,11 +4,9 @@ import com.neuq.info.dao.RedisDao;
 import com.neuq.info.dao.UserDao;
 import com.neuq.info.entity.User;
 import com.neuq.info.enums.ErrorStatus;
-import com.neuq.info.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -42,8 +40,8 @@ public class SessionInterceptor implements HandlerInterceptor {
                 String openId = wxSessionStr.split("#")[1];
                 User user = userDao.queryUserByOpenId(openId);
                 if (user != null) {
-                    logger.info("此次请求的用户id为{},openid为{}",user.getUserId(),user.getOpenId());
-                    request.setAttribute("userId", user.getUserId());
+                    logger.info("此次请求的用户id为{},openid为{}",user.getUserid(),user.getOpenid());
+                    request.setAttribute("userId", user.getUserid());
                     return true;
                 } else {
                     getResStr(ErrorStatus.no_userinfo, response);
