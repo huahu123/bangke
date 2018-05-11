@@ -1,5 +1,6 @@
 package com.neuq.info.common.utils;
 
+import java.util.Random;
 import java.util.UUID;
 
 public class OrderUtil {
@@ -16,6 +17,16 @@ public class OrderUtil {
         // d 代表参数为正数型
         return machineId + String.format("%015d", hashCodeV);
     }
+
+    public static String generatePayCode() {
+        StringBuffer sb = new StringBuffer();
+        Random random = new Random();
+        for (int i = 0; i < 6; i++) {
+            sb.append(random.nextInt(10));
+        }
+        return sb.toString();
+    }
+
     public static void main(String[] args) {
         System.out.println(getOrderIdByUUId());
     }

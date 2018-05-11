@@ -1,5 +1,6 @@
 package com.neuq.info.service;
 
+import com.neuq.info.dao.UserDao;
 import com.neuq.info.entity.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,16 +32,19 @@ public class UserServiceTest {
     @Test
     public void updateUser() throws Exception {
         User user=new User();
-        user.setOpenid("openid1");
-        user.setAvatarurl("111");
-        user.setNickname("222");
+        user.setOpenId("openid1");
+        user.setAvatarUrl("111");
+        user.setNickName("222");
         user.setGender((byte)2);
         userService.updateUser(user);
     }
 
     @Test
     public void insertUser() throws Exception {
-
+        User user = userService.queryUserByOpenId("1");
+        user.setOpenId("2");
+        userService.insertUser(user);
+        System.out.println("success");
     }
 
     @Test

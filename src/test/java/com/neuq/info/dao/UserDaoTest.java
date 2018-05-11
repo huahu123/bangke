@@ -97,4 +97,10 @@ public class UserDaoTest {
 //        System.out.println(res);
 //    }
 
+    @Test
+    public void testSelectCreateValue() {
+        System.out.println(        userDao.selectCreateValue( 20L));
+    }
+
+
 }

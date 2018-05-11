@@ -3,7 +3,6 @@ package com.neuq.info.web;
 import com.neuq.info.dao.RedisDao;
 import com.neuq.info.entity.User;
 import com.neuq.info.enums.ErrorStatus;
-import com.neuq.info.service.UserService;
 import com.neuq.info.service.WxService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -82,7 +81,6 @@ public class WxController {
      */
     @RequestMapping(value = "/checkUserInfo", method = RequestMethod.GET, produces = "application/json")
     @ApiOperation(notes = "此API暂时不用", httpMethod = "GET", value = "此API暂时不用")
-
     @ApiImplicitParams({
             @ApiImplicitParam(name = "rawData", value = "小程序登录时获取的code", paramType = "query", dataType = "string"),
             @ApiImplicitParam(name = "signature", value = "小程序登录时获取的code", paramType = "query", dataType = "string"),

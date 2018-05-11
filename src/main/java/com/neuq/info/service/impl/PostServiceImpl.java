@@ -6,7 +6,7 @@
 //import com.neuq.info.dao.PostDao;
 //import com.neuq.info.dto.Page;
 //import com.neuq.info.dto.ResultModel;
-//import com.neuq.info.entity.Like;
+//import com.neuq.neuqinfo.entity.Like;
 //import com.neuq.info.entity.Post;
 //import com.neuq.info.enums.ResultStatus;
 //import com.neuq.info.exception.RepeatLikeException;

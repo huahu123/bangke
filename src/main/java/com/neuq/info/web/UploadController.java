@@ -1,8 +1,10 @@
 package com.neuq.info.web;
 
+
 import com.neuq.info.dto.ResultModel;
 import com.neuq.info.enums.ResultStatus;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
@@ -30,6 +32,7 @@ import java.util.List;
 public class UploadController {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @ApiImplicitParam
     @RequestMapping("/picture")
     @ApiOperation(value = "微信图片上传")
     @ResponseBody

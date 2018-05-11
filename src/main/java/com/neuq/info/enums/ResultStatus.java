@@ -1,12 +1,9 @@
 package com.neuq.info.enums;
 
-import org.springframework.test.annotation.Repeat;
-
 /**
  * Created by lihang on 2017/4/4.
  */
 public enum ResultStatus {
-
     SUCCESS(200, "ok"),
     FAILURE(-1001,"failure"),
     NO_MORE_DATA(-1002,"没有更多数据"),

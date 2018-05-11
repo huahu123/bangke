@@ -3,25 +3,29 @@ package com.neuq.info.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.neuq.info.common.Enum.OrderEnum;
 import com.neuq.info.common.utils.wxPayUtil.*;
 import com.neuq.info.config.WxPayConfig;
+import com.neuq.info.entity.Order;
 import com.neuq.info.entity.PayInfo;
+import com.neuq.info.entity.User;
+import com.neuq.info.service.OrderService;
+import com.neuq.info.service.UserService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @AUTHOR lindexiang
@@ -33,12 +37,34 @@ import java.util.Map;
 @Api(value = "微信支付相关api")
 public class wxPayController {
 
+    public static Integer ORDER_WZF = 0;//未支付
+    public static Integer ORDER_DJD = 1;//待接单
+    public static Integer ORDER_YJD = 2;//已接单
+    public static Integer ORDER_YWC = 3;//已完成
+    public static Integer ORDER_YQX = 4;//已取消
+
+    public static Integer PAY_WZF = 0; //未支付
+    public static Integer PAY_YZF = 1;//已支付
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private UserService userService;
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @ApiOperation(value = "预下单")
-    @RequestMapping(value = "/prePay", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
+
+    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
+    @ApiOperation(value = "订单支付接口")
+    @RequestMapping(value = "/preOrderPay", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
-    public String prePay(@RequestParam(name = "code")String code, HttpServletRequest request) {
+    public String preOrderPay(@RequestParam(name = "orderId") String orderId,
+                              @RequestParam(name = "totalFee") Integer totalFee,
+                              HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        User user = userService.queryUserByUserId(userId);
+        Order order = orderService.findOrderByOrderId(orderId);
         String content = null;
         Map map = new HashMap();
         ObjectMapper mapper = new ObjectMapper();
@@ -46,23 +72,21 @@ public class wxPayController {
         boolean result = true;
         String info = "";
 
-        log.info("\n======================================================");
-        log.info("code: " + code);
-
-        String openId = getOpenId(code);
+        String openId = user.getOpenId();
+        //openid为空
         if(StringUtils.isBlank(openId)) {
             result = false;
             info = "获取到openId为空";
+        } else if(null == order || order.getPayStatus() != 0 ||
+                order.getOrderStatus() != OrderEnum.WzfOrderStatus.getValue()) {
+            result = false;
+            info = "订单出错，支付失败";
         } else {
             openId = openId.replace("\"", "").trim();
-
             String clientIP = CommonUtil.getClientIp(request);
-
             log.info("openId: " + openId + ", clientIP: " + clientIP);
-
             String randomNonceStr = RandomUtils.generateMixString(32);
-            String prepayId = unifiedOrder(openId, clientIP, randomNonceStr);
-
+            String prepayId = unifiedOrder(openId, clientIP, randomNonceStr, totalFee);
             log.info("prepayId: " + prepayId);
 
             if(StringUtils.isBlank(prepayId)) {
@@ -94,11 +118,20 @@ public class wxPayController {
     @ApiOperation(value = "支付成功接口")
     @RequestMapping(value = "/paySuccess", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
-    public void paySuccess(HttpServletRequest request) {
+    public Boolean paySuccess(@RequestParam(name = "orderId") String orderId,
+                                  HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        Order order = orderService.findOrderByOrderId(orderId);
+        if (null == order || order.getPayStatus() != PAY_WZF || order.getOrderStatus() != ORDER_WZF) {
+            return false;
+        }
+        //设置订单
+        order.setPayStatus(PAY_YZF);
+        order.setOrderStatus(ORDER_DJD);
+        orderService.editOrder(order);
         log.info("----支付成功-----");
+        return true;
     }
-
-
 
     private String getOpenId(String code) {
         String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + WxPayConfig.APP_ID +
@@ -134,13 +167,13 @@ public class wxPayController {
      * 调用统一下单接口
      * @param openId
      */
-    private String unifiedOrder(String openId, String clientIP, String randomNonceStr) {
+    private String unifiedOrder(String openId, String clientIP, String randomNonceStr, Integer totalFee) {
 
         try {
 
             String url = WxPayConfig.URL_UNIFIED_ORDER;
 
-            PayInfo payInfo = createPayInfo(openId, clientIP, randomNonceStr);
+            PayInfo payInfo = createPayInfo(openId, clientIP, randomNonceStr, totalFee);
             String md5 = getSign(payInfo);
             payInfo.setSign(md5);
 
@@ -148,7 +181,6 @@ public class wxPayController {
 
             String xml = CommonUtil.payInfoToXML(payInfo);
             xml = xml.replace("__", "_").replace("<![CDATA[1]]>", "1");
-            //xml = xml.replace("__", "_").replace("<![CDATA[", "").replace("]]>", "");
             log.error(xml);
 
             StringBuffer buffer = HttpUtil.httpsRequest(url, "POST", xml);
@@ -179,7 +211,7 @@ public class wxPayController {
         return "";
     }
 
-    private PayInfo createPayInfo(String openId, String clientIP, String randomNonceStr) {
+    private PayInfo createPayInfo(String openId, String clientIP, String randomNonceStr, Integer totalFee) {
 
         Date date = new Date();
         String timeStart = TimeUtils.getFormatTime(date, WxPayConfig.TIME_FORMAT);
@@ -193,10 +225,10 @@ public class wxPayController {
         payInfo.setDevice_info("WEB");
         payInfo.setNonce_str(randomNonceStr);
         payInfo.setSign_type("MD5");  //默认即为MD5
-        payInfo.setBody("同城帮客-代排队");
-        payInfo.setAttach("杭州");  //附加数据
+        payInfo.setBody("tcbk");
+        payInfo.setAttach("hz");  //附加数据
         payInfo.setOut_trade_no(randomOrderId);
-        payInfo.setTotal_fee(1); // 设置支付金额 分
+        payInfo.setTotal_fee(totalFee); // 设置支付金额 分
         payInfo.setSpbill_create_ip(clientIP); //支付的ip
         payInfo.setTime_start(timeStart); //支付开始时间
         payInfo.setTime_expire(timeExpire);//支付结束时间
@@ -230,9 +262,7 @@ public class wxPayController {
 
         log.error("排序后的拼接参数：" + sb.toString());
         System.out.println();
-
         return CommonUtil.getMD5(sb.toString().trim()).toUpperCase();
     }
-
 
 }

@@ -23,6 +23,8 @@ import java.util.*;
  */
 public class CommonUtil {
 
+
+
     public static String getRandomOrderId() {
         // UUID.randomUUID().toString().replace("-","")
         Random random = new Random(System.currentTimeMillis());

@@ -10,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -82,14 +83,14 @@ public class OrderDaoTest {
         double longitude = 0;
         //先计算查询点的经纬度范围
         double r = 6371;//地球半径千米
-        double dis = 0.5;//0.5千米距离
+        double dis = 1;//0.5千米距离
         double dlng =  2*Math.asin(Math.sin(dis/(2*r))/Math.cos(latitude*Math.PI/180));
-        dlng = dlng*180/Math.PI;//角度转为弧度
+        dlng = Math.abs(dlng*180/Math.PI);//角度转为弧度
         double dlat = dis/r;
         dlat = dlat*180/Math.PI;
         double minlat =latitude-dlat;
         double maxlat = latitude+dlat;
-        double minlng = longitude -dlng;
+        double minlng = longitude - dlng;
         double maxlng = longitude + dlng;
         HashMap hashMap = new HashMap();
         hashMap.put("minlng", BigDecimal.valueOf(minlng));
@@ -110,4 +111,15 @@ public class OrderDaoTest {
         List<Order> orders = orderDao.listOrderByCondition(map);
         System.out.println(orders.size());
     }
+
+
+    @Test
+    public void queryAll() {
+        Order query = Order.builder()
+                .autoId(127L)
+                .build();
+        List<Order> orders = orderDao.queryAll(query);
+        System.out.println(123);
+    }
+
 }

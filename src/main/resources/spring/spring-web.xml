@@ -47,8 +47,8 @@
             <!---->
             <!---->
             <!--order先不过滤-->
-            <mvc:exclude-mapping path="/Order/*"/>
-            <mvc:exclude-mapping path="/wxPay/*"/>
+            <!--<mvc:exclude-mapping path="/Order/*"/>-->
+            <!--<mvc:exclude-mapping path="/wxPay/*"/>-->
             <mvc:exclude-mapping path="/api/**"/>
             <mvc:exclude-mapping path="/v2/api-docs"/>
             <bean class="com.neuq.info.interceptor.SessionInterceptor"/>

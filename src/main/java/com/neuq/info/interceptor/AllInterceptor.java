@@ -1,10 +1,6 @@
 package com.neuq.info.interceptor;
 
 import com.neuq.info.dao.RedisDao;
-import com.neuq.info.dto.ResultModel;
-import com.neuq.info.entity.User;
-import com.neuq.info.enums.ResultStatus;
-import com.neuq.info.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.WebRequest;

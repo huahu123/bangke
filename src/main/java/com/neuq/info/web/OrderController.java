@@ -1,18 +1,27 @@
 package com.neuq.info.web;
+import com.neuq.info.common.Enum.OrderEnum;
 import com.neuq.info.common.utils.DateTimeUtil;
 import com.neuq.info.common.utils.NeiborUtil;
+import com.neuq.info.common.utils.OrderUtil;
 import com.neuq.info.dto.ResultModel;
+import com.neuq.info.dto.ResultResponse;
 import com.neuq.info.entity.Order;
 import com.neuq.info.enums.ResultStatus;
 import com.neuq.info.service.OrderService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -29,95 +38,111 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    //返回的值还需要修改 不需要将整个订单都返回
+    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
     @ApiOperation(value = "根据orderid获取order")
     @RequestMapping(value = "/OrderInfo", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
-    public ResultModel orderInfo(@RequestParam(value = "orderId") String orderId, HttpServletRequest request) {
+    public ResultResponse orderInfo(@RequestParam(value = "orderId") String orderId, HttpServletRequest request) {
         Order order = orderService.findOrderByOrderId(orderId);
         if (order == null)
-            return new ResultModel(ResultStatus.ORDER_NOT_FOUND);
-        return new ResultModel(ResultStatus.SUCCESS, order);
+            return new ResultResponse(-1, "订单不存在");
+        return new ResultResponse(0, order);
     }
 
-    //查询订单
-    @ApiOperation(value = "查询附近订单")
-    @RequestMapping(value = "/listOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
+    @ApiOperation(value = "帮客查询附近订单")
+    @RequestMapping(value = "/Provider/ListOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
-    public ResultModel listOrder(@RequestParam(required = true) BigDecimal longitude,
-                                 @RequestParam(required = true) BigDecimal latitude,
-                                 @RequestParam(defaultValue = "0", required = true) Integer orderStatus,
-                                 @RequestParam(required = true) Double dis) {
+    public ResultResponse listOrder(@RequestParam BigDecimal longitude,
+                                 @RequestParam BigDecimal latitude,
+                                 @RequestParam(defaultValue = "0") Integer orderStatus,
+                                 @RequestParam Double dis, HttpServletRequest request ) {
 
-        List<Double> pos = NeiborUtil.getNeiborPoi(longitude, latitude, dis);
-        HashMap condition = new HashMap();
-        condition.put("minlng", pos.get(0));
-        condition.put("maxlng", pos.get(1));
-        condition.put("minlat", pos.get(2));
-        condition.put("maxlat", pos.get(3));
-        condition.put("orderStatus", orderStatus);
-        List<Order> orders = orderService.listOrderForUser(condition);
-        return new ResultModel(ResultStatus.SUCCESS, orders);
+        Long userId = (Long) request.getAttribute("userId");
+        List<BigDecimal> pos = NeiborUtil.getNeiborPoi(longitude, latitude, dis);
+        Order query = Order.builder()
+                .providerId(userId)
+                .orderStatus(orderStatus)
+                .minlng(pos.get(0))
+                .maxlng(pos.get(1))
+                .minlat(pos.get(2))
+                .maxlat(pos.get(3))
+                .build();
+
+        List<Order> orders = orderService.queryAll(query);
+        return new ResultResponse(0, orders);
     }
 
-    //加入订单  如果是买家发布的订单 或者卖家加入的订单
-    @ApiOperation(value = "卖家接单")
-    @RequestMapping(value = "/ProviderSubmitOrder", method = RequestMethod.GET,produces =  {"application/json;charset=UTF-8"})
+    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
+    @ApiOperation(value = "帮客接单")
+    @RequestMapping(value = "/Provider/EnterOrder", method = RequestMethod.GET,produces =  {"application/json;charset=UTF-8"})
     @ResponseBody
-    public ResultModel submitOrder(@RequestParam String orderId, HttpServletRequest request) {
-        //卖家的userId  因为在拦截器中已经验证过了
-        // 这边这个user肯定存在 而且是唯一的 因为是openid验证的
-        // opendi是唯一的
+    public ResultResponse submitOrder(@RequestParam String orderId, HttpServletRequest request) {
+
         Long userId = (Long) request.getAttribute("userId");
         Order order = orderService.findOrderByOrderId(orderId);
         //订单不存在
         if (order == null)
-            return new ResultModel(ResultStatus.ORDER_NOT_FOUND);
+            return new ResultResponse(-1, "订单不存在");
         //订单不是等待接单的状态
         if (order.getOrderStatus() != 0)
-            return new ResultModel(ResultStatus.ORDER_SUBMIT_FAIL);
+            return new ResultResponse(-1, "订单不是待接单状态");
         //订单已经加入帮客了
-        if (order.getProviderId() == 0)
-            return  new ResultModel(ResultStatus.ORDER_SUBMIT_FAIL);
+        if (order.getProviderId() != 0)
+            return  new ResultResponse(-1, "订单已被接单");
         //不能加入自己创建的订单
         if (order.getCustomerId() == userId)
-            return new ResultModel(ResultStatus.ORDER_SUBMIT_FAIL);
+            return new ResultResponse(-1, "不能接自己创建的订单");
 
         order.setProviderId(userId);
-        order.setOrderStatus(1); //设置订单为接单
-        int flag = orderService.editOrder(order);
-        if (flag == 0)
-            return new ResultModel(ResultStatus.ORDER_SUBMIT_FAIL);
-        return new ResultModel(ResultStatus.SUCCESS);
+        order.setOrderStatus(1);
+        orderService.editOrder(order);
+        return new ResultResponse(0, order);
     }
 
-    //创建订单  写的太烂了 我也不知道为什么注解没效果 妈的
+
+    //创建订单
     @ApiOperation(value = "发布代排队订单")
-    @RequestMapping(value = "/CreateOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @ApiImplicitParam(name = "session", value = "session", paramType = "query", dataType = "string")
+    @RequestMapping(value = "/CreateOrder", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
-    public ResultModel createOrder(@RequestParam String restaurantName,
-                                   @RequestParam String restaurantLocation,
-                                   @RequestParam BigDecimal longitude,
-                                   @RequestParam BigDecimal latitude,
-                                   @RequestParam Integer rerstaurantPeople,
-                                   @RequestParam String startTime,
-                                   @RequestParam String arriveTime,
-                                   @RequestParam Integer queueType,
-                                   @RequestParam String contactName,
-                                   @RequestParam String phoneNum,
-                                   @RequestParam Byte gender,
-                                   @RequestParam String comment,
-                                   @RequestParam Double fee,
-                                   @RequestParam Double extraFee,
-                                   @RequestParam(defaultValue = "0",required = true) Long customerId,
-                                   @RequestParam(defaultValue = "0", required = true) Long providerId) {
+    public ResultResponse createOrder(@RequestParam(required = true) String restaurantName,
+                                      @RequestParam(required = true) String restaurantLocation,
+                                      @RequestParam(required = true) BigDecimal longitude,
+                                      @RequestParam(required = true) BigDecimal latitude,
+                                      @RequestParam(required = true) Integer restaurantPeople,
+                                      @RequestParam(required = true) String startTime,
+                                      @RequestParam(required = true) String arriveTime,
+                                      @RequestParam(required = true) Integer queueType,
+                                      @RequestParam(required = true) String contactName,
+                                      @RequestParam(required = true) String phoneNum,
+                                      @RequestParam(required = true) Byte gender,
+                                      @RequestParam(required = true) String comment,
+                                      @RequestParam(required = true) Double fee,
+                                      @RequestParam(required = true) Double extraFee,
+                                      HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        Date st, et;
+        try {
+            st = DateTimeUtil.parseDateTime(startTime,
+                    DateTimeUtil.DEFAULT_DATE_TIME_HHmm_FORMAT_PATTERN).toDate();
+            et = DateTimeUtil.parseDateTime(arriveTime,
+                    DateTimeUtil.DEFAULT_DATE_TIME_HHmm_FORMAT_PATTERN).toDate();
+
+            if (et.before(st))
+                return new ResultResponse(-1, "到达时间不能早于开始时间");
+            if (st.before(DateTime.now().toDate()) || et.before(DateTime.now().toDate()))
+                return new ResultResponse(-1, "开始时间或者到达时间均不能早于当前时间");
+        }catch (Exception e) {
+            return new ResultResponse(-1, "时间转化失败");
+        }
 
         Order order = new Order();
         order.setRestaurantName(restaurantName);
         order.setRestaurantLocation(restaurantLocation);
         order.setLongitude(longitude);
         order.setLatitude(latitude);
-        order.setRestaurantPeople(rerstaurantPeople);
+        order.setRestaurantPeople(restaurantPeople);
         order.setQueueType(queueType);
         order.setContactName(contactName);
         order.setPhoneNum(phoneNum);
@@ -125,24 +150,40 @@ public class OrderController {
         order.setComment(comment);
         order.setFee(fee);
         order.setExtraFee(extraFee);
-        order.setCustomerId(customerId);
-        order.setProviderId(providerId);
-        try {
-            order.setStartTime(DateTimeUtil.parseDateTime(startTime,
-                    DateTimeUtil.DEFAULT_DATE_TIME_HHmm_FORMAT_PATTERN).toDate());
-            order.setArriveTime(DateTimeUtil.parseDateTime(arriveTime,
-                    DateTimeUtil.DEFAULT_DATE_TIME_HHmm_FORMAT_PATTERN).toDate());
-        }catch (Exception e) {
-            return new ResultModel(ResultStatus.ORDER_CREATE_FAIL);
-        }
-
-        //每次创建订单只允许出现一个0
-        if ((customerId == 0 && providerId == 0) || (customerId != 0 && providerId != 0))
-            return new ResultModel(ResultStatus.ORDER_CREATE_FAIL);
-
-        int flag = orderService.createOrder(order);
-        if (flag == 0)
-            return new ResultModel(ResultStatus.ORDER_CREATE_FAIL);
-        return new ResultModel(ResultStatus.SUCCESS);
+        order.setCustomerId(userId);
+        order.setProviderId((long)0);//设置为0表示没有接单
+        order.setOrderId(OrderUtil.getOrderIdByUUId());
+        order.setStartTime(st);
+        order.setArriveTime(et);
+        order.setPayCode(OrderUtil.generatePayCode());
+        orderService.createOrder(order);
+        return new ResultResponse(0, order);
     }
+
+    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
+    @ApiOperation(value = "完成订单后上传payCode验证")
+    @RequestMapping(value = "/finishOrder/checkPayCode", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @ResponseBody
+    public ResultResponse myProviderOrder(@RequestParam String orderId, @RequestParam String payCode,
+                                          HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        if (payCode.isEmpty())
+            return new ResultResponse(-1, "验证码不准为空");
+        Order query = Order.builder()
+                .orderId(orderId)
+                .providerId(userId)
+                .build();
+        List<Order> orders = orderService.queryAll(query);
+        if (null == orders || orders.size() == 0)
+            return new ResultResponse(-1, "订单不存在");
+        Order savedOrder = orders.get(0);
+        if (!payCode.equals(savedOrder.getPayCode()))
+            return new ResultResponse(-1, "验证码不对，请重试");
+        savedOrder.setOrderStatus(OrderEnum.YwcOrderStatus.getValue());
+        orderService.editOrder(savedOrder);
+        //TODO 微信支付，设置个人的钱包
+        return new ResultResponse(0, savedOrder);
+    }
+
 }
