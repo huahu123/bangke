@@ -5,12 +5,14 @@ import com.neuq.info.common.aes.AES;
 import com.neuq.info.dao.UserDao;
 import com.neuq.info.entity.User;
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Lin Dexiang
@@ -20,16 +22,27 @@ import java.util.Date;
 @Service
 public class UserService {
 
+    @Autowired
     private UserDao userDao;
 
     public User queryUserByOpenId(String openid) {
-        User user = userDao.queryUserByOpenId(openid) == null ? null : userDao.queryUserByOpenId(openid);
-        return user;
+        User query = User.builder()
+                .openId(openid)
+                .build();
+        List<User> users = userDao.queryAll(query);
+        if (null == users || users.size() == 0)
+            return null;
+        return users.get(0);
     }
 
     public User queryUserByUserId(Long userId) {
-        User user = userDao.queryUserByUserId(userId) == null ? null : userDao.queryUserByUserId(userId);
-        return user;
+        User query = User.builder()
+                .userId(userId)
+                .build();
+        List<User> users = userDao.queryAll(query);
+        if (null == users || users.size() == 0)
+            return null;
+        return users.get(0);
     }
 
     public int updateUser(User user) {

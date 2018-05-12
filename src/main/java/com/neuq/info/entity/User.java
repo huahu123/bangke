@@ -1,35 +1,68 @@
 package com.neuq.info.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 
-@Getter
-@Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User implements Serializable {
+@Builder
+@ApiModel(value = "User", description = "用户信息")
+public class User {
+    @ApiModelProperty(value = "自增id", required = true)
     private Long userId;
+
+    @ApiModelProperty(value = "openId", required = true)
     private String openId;
+
+    @ApiModelProperty(value = "自增id")
     private String avatarUrl;
+
+    @ApiModelProperty(value = "昵称")
     private String nickName;
+
+    @ApiModelProperty(value = "性别", required = true)
     private Byte gender;
+
+    @ApiModelProperty(value = "城市")
     private String city;
+
+    @ApiModelProperty(value = "语言")
     private String language;
+
+    @ApiModelProperty(value = "省")
     private String province;
+
+    @ApiModelProperty(value = "国家")
     private String country;
+
+    @ApiModelProperty(value = "公众号Id")
     private String unionId;
+
+    @ApiModelProperty(value = "信用值")
     private Integer createValue;
+
+    @ApiModelProperty(value = "钱包")
     private Float money;
-    private Date createTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @ApiModelProperty(value = "用户最后一次更新时间")
     private Date updateTime;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @ApiModelProperty(value = "用户创建时间")
+    private Date createTime;
+
+    @ApiModelProperty(value = "其他解析字段")
     private HashMap<String, String> watermark;
-    private static final long serialVersionUID = 1L;
 
     @Override
     public boolean equals(Object o) {

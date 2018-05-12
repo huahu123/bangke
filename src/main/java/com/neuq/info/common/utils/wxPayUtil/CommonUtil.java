@@ -35,6 +35,11 @@ public class CommonUtil {
         return value + "";
     }
 
+
+    public static void main(String[] args) {
+        System.out.println(getRandomOrderId());
+    }
+
     private static XStream xstream = new XStream(new XppDriver() {
         public HierarchicalStreamWriter createWriter(Writer out) {
             return new PrettyPrintWriter(out) {

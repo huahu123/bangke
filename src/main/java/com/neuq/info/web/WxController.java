@@ -3,6 +3,7 @@ package com.neuq.info.web;
 import com.neuq.info.dao.RedisDao;
 import com.neuq.info.entity.User;
 import com.neuq.info.enums.ErrorStatus;
+import com.neuq.info.service.UserService;
 import com.neuq.info.service.WxService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;

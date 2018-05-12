@@ -42,20 +42,15 @@ public class UserDaoTest {
         userDao.insert(user);
     }
 
-//    @Test
-//    public void queryUserById() throws Exception {
-//        User user = userDao.queryUserById(1);
-//        System.out.println(user);
-//    }
-//
-//    @Test
-//    public void queryAllUserByPage() throws Exception {
-//        Page page = new Page();
-//        page.setCurrentPage(1);
-//        page.setTotalNumber(userDao.queryAllUserCount());
-//        List<User> list = userDao.queryAllUserByPage(page);
-//        System.out.println(list.size());
-//    }
+    @Test
+    public void queryAllTest() throws Exception {
+        User query = User.builder()
+                .userId(10l)
+                .build();
+        List<User> users = userDao.queryAll(query);
+        System.out.println(users.size());
+    }
+
 //
 //    @Test
 //    public void queryUserByOpenid() throws Exception {
