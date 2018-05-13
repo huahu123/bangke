@@ -1,6 +1,6 @@
 package com.neuq.info.web;
 
-import com.neuq.info.common.Enum.OrderEnum;
+import com.neuq.info.enums.OrderEnum;
 import com.neuq.info.dto.ResultResponse;
 import com.neuq.info.entity.Order;
 import com.neuq.info.entity.User;
@@ -53,7 +53,7 @@ public class UserController {
 
     @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
     @ApiOperation(notes = "获取客户全部订单", httpMethod = "GET", value = "获取客户全部订单")
-    @RequestMapping(value = "/Order/Customer", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @RequestMapping(value = "/Customer/listOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
     public ResultResponse myCustomerOrder(@RequestParam("orderStatus") Integer orderStatus,
                             HttpServletRequest request) {
@@ -70,7 +70,7 @@ public class UserController {
 
     @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
     @ApiOperation(notes = "获取帮客全部订单", httpMethod = "GET", value = "获取帮客全部订单")
-    @RequestMapping(value = "/Order/Provider", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @RequestMapping(value = "/Provider/listOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
     public ResultResponse myProviderOrder(@RequestParam("orderStatus") Integer orderStatus,
                                           HttpServletRequest request) {
@@ -86,7 +86,7 @@ public class UserController {
 
     @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
     @ApiOperation(notes = "客户取消订单", httpMethod = "GET", value = "客户取消订单")
-    @RequestMapping(value = "/Order/Customer/CancelOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @RequestMapping(value = "/Customer/CancelOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
     public ResultResponse customerCancelOrder(@RequestParam(value = "orderId", required = true) String orderId,
                                               HttpServletRequest request) {
@@ -119,6 +119,36 @@ public class UserController {
 
         orderService.cancelOrder(order);
         return new ResultResponse(0, "取消订单成功");
+    }
+
+    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
+    @ApiOperation(value = "帮客完成订单后上传payCode验证")
+    @RequestMapping(value = "/Provider/finishOrder", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @ResponseBody
+    public ResultResponse myProviderOrder(@RequestParam String orderId, @RequestParam String payCode,
+                                          HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        User user = userService.queryUserByUserId(userId);
+        if (payCode.isEmpty())
+            return new ResultResponse(-1, "验证码不准为空");
+        Order query = Order.builder()
+                .orderId(orderId)
+                .providerId(userId)
+                .build();
+        List<Order> orders = orderService.queryAll(query);
+        if (null == orders || orders.size() == 0)
+            return new ResultResponse(-1, "订单不存在");
+        Order savedOrder = orders.get(0);
+        if (!payCode.equals(savedOrder.getPayCode()))
+            return new ResultResponse(-1, "验证码不对，请重试");
+        savedOrder.setOrderStatus(OrderEnum.YwcOrderStatus.getValue());
+        orderService.editOrder(savedOrder);
+        //TODO 微信支付，设置个人的钱包
+        Float fee = (float)((savedOrder.getExtraFee() + savedOrder.getFee()));
+        user.setMoney(user.getMoney() + fee);
+        userService.updateUser(user);//付钱到电子钱包
+        return new ResultResponse(0, "完成订单");
     }
 
 }

@@ -1,4 +1,4 @@
-package com.neuq.info.common.Enum;
+package com.neuq.info.enums;
 
 /**
  * @author Lin Dexiang

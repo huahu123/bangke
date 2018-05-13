@@ -1,13 +1,10 @@
 package com.neuq.info.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.neuq.info.common.Enum.OrderEnum;
+import com.neuq.info.enums.OrderEnum;
 import com.neuq.info.common.utils.wxPayUtil.*;
 import com.neuq.info.config.WxPayConfig;
 import com.neuq.info.entity.Order;
-import com.neuq.info.entity.PayInfo;
 import com.neuq.info.entity.User;
 import com.neuq.info.service.OrderService;
 import com.neuq.info.service.UserService;
@@ -15,7 +12,6 @@ import com.neuq.info.service.WxPayService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

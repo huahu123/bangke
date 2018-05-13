@@ -1,13 +1,13 @@
 package com.neuq.info.web;
-import com.neuq.info.common.Enum.OrderEnum;
+import com.neuq.info.entity.User;
+import com.neuq.info.enums.OrderEnum;
 import com.neuq.info.common.utils.DateTimeUtil;
 import com.neuq.info.common.utils.NeiborUtil;
 import com.neuq.info.common.utils.OrderUtil;
-import com.neuq.info.dto.ResultModel;
 import com.neuq.info.dto.ResultResponse;
 import com.neuq.info.entity.Order;
-import com.neuq.info.enums.ResultStatus;
 import com.neuq.info.service.OrderService;
+import com.neuq.info.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -16,13 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.crypto.Data;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -160,30 +156,6 @@ public class OrderController {
         return new ResultResponse(0, order);
     }
 
-    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
-    @ApiOperation(value = "完成订单后上传payCode验证")
-    @RequestMapping(value = "/finishOrder/checkPayCode", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
-    @ResponseBody
-    public ResultResponse myProviderOrder(@RequestParam String orderId, @RequestParam String payCode,
-                                          HttpServletRequest request) {
 
-        Long userId = (Long) request.getAttribute("userId");
-        if (payCode.isEmpty())
-            return new ResultResponse(-1, "验证码不准为空");
-        Order query = Order.builder()
-                .orderId(orderId)
-                .providerId(userId)
-                .build();
-        List<Order> orders = orderService.queryAll(query);
-        if (null == orders || orders.size() == 0)
-            return new ResultResponse(-1, "订单不存在");
-        Order savedOrder = orders.get(0);
-        if (!payCode.equals(savedOrder.getPayCode()))
-            return new ResultResponse(-1, "验证码不对，请重试");
-        savedOrder.setOrderStatus(OrderEnum.YwcOrderStatus.getValue());
-        orderService.editOrder(savedOrder);
-        //TODO 微信支付，设置个人的钱包
-        return new ResultResponse(0, savedOrder);
-    }
 
 }
