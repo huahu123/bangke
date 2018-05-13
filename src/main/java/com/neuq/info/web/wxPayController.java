@@ -93,7 +93,7 @@ public class wxPayController {
             String clientIP = CommonUtil.getClientIp(request);
             log.info("openId: " + openId + ", clientIP: " + clientIP);
             String randomNonceStr = RandomUtils.generateMixString(32);
-            String prepayId = wxPayService.unifiedOrder(openId, clientIP, randomNonceStr, totalFee);
+            String prepayId = wxPayService.unifiedOrder(user, order, clientIP);
             log.info("prepayId: " + prepayId);
 
             if(StringUtils.isBlank(prepayId)) {

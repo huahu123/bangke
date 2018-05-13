@@ -3,8 +3,22 @@ package com.neuq.info.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.neuq.info.common.utils.HttpUtil;
+import com.neuq.info.config.WxPayConfig;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
+import org.apache.http.util.EntityUtils;
 import org.junit.Test;
 
+import javax.net.ssl.SSLContext;
+import java.io.*;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -72,6 +86,59 @@ public class HttpUtilTest {
         String re = HttpUtil.sendGet("http://www.dragongod.cn/qd/temp/user_form.php", "sort=seri_1");
 //                   httpUtil.httpGet("http://www.dragongod.cn/temp/user_form.php?sort=seri_1");
         System.out.println(re);
+    }
+
+    @Test
+    public void ClientCustomSSLTest() throws Exception {
+        KeyStore keyStore  = KeyStore.getInstance("PKCS12");
+        FileInputStream instream = new FileInputStream(new File(WxPayConfig.KEY_PATH));
+        try {
+            keyStore.load(instream, WxPayConfig.MCH_ID.toCharArray());
+        } finally {
+            instream.close();
+        }
+
+        // Trust own CA and all self-signed certs
+        SSLContext sslcontext = SSLContexts.custom()
+                .loadKeyMaterial(keyStore, WxPayConfig.MCH_ID.toCharArray())
+                .build();
+        // Allow TLSv1 protocol only
+        SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+                sslcontext,
+                new String[] { "TLSv1" },
+                null,
+                SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+        CloseableHttpClient httpclient = HttpClients.custom()
+                .setSSLSocketFactory(sslsf)
+                .build();
+        try {
+
+            HttpPost httpget = new HttpPost("https://api.mch.weixin.qq.com/secapi/pay/refund");
+
+            System.out.println("executing request" + httpget.getRequestLine());
+
+            CloseableHttpResponse response = httpclient.execute(httpget);
+            try {
+                HttpEntity entity = response.getEntity();
+
+                System.out.println("----------------------------------------");
+                System.out.println(response.getStatusLine());
+                if (entity != null) {
+                    System.out.println("Response content length: " + entity.getContentLength());
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entity.getContent()));
+                    String text;
+                    while ((text = bufferedReader.readLine()) != null) {
+                        System.out.println(text);
+                    }
+
+                }
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
+            }
+        } finally {
+            httpclient.close();
+        }
     }
 
 }

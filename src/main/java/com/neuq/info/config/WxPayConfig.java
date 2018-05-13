@@ -31,7 +31,14 @@ public class WxPayConfig {
 
     public static final String URL_NOTIFY =  "https://daluotech.natapp4.cc/wxPay/paySuccess";
 
+    public static final String URL_REFUND = "https://api.mch.weixin.qq.com/secapi/pay/refund";
+
     public static final String TIME_FORMAT = "yyyyMMddHHmmss";
 
     public static final int TIME_EXPIRE = 2;  //单位是day
+
+    public static final String KEY_PATH = "/Users/lindexiang/softWare/apiclient_cert.p12";
+
+    public static final String KEY_REFUND = "192006250b4c09247ec02edce69f6a2d";
+
 }

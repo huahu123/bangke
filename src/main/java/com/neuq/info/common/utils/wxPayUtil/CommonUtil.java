@@ -1,6 +1,7 @@
 package com.neuq.info.common.utils.wxPayUtil;
 
 import com.neuq.info.entity.PayInfo;
+import com.neuq.info.entity.RefundInfo;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.core.util.QuickWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -65,6 +66,11 @@ public class CommonUtil {
     public static String payInfoToXML(PayInfo pi) {
         xstream.alias("xml", pi.getClass());
         return xstream.toXML(pi);
+    }
+
+    public static String refundInfoToXML(RefundInfo refundInfo) {
+        xstream.alias("xml", refundInfo.getClass());
+        return xstream.toXML(refundInfo);
     }
 
     @SuppressWarnings("unchecked")
