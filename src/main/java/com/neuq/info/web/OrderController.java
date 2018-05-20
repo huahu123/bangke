@@ -12,6 +12,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,9 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
 
     @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
     @ApiOperation(value = "根据orderid获取order")
@@ -56,8 +61,7 @@ public class OrderController {
 
         Long userId = (Long) request.getAttribute("userId");
         List<BigDecimal> pos = NeiborUtil.getNeiborPoi(longitude, latitude, dis);
-        Order query = Order.builder()
-                .providerId(userId)
+         Order query = Order.builder()
                 .orderStatus(orderStatus)
                 .minlng(pos.get(0))
                 .maxlng(pos.get(1))
@@ -81,7 +85,7 @@ public class OrderController {
         if (order == null)
             return new ResultResponse(-1, "订单不存在");
         //订单不是等待接单的状态
-        if (order.getOrderStatus() != 0)
+        if (order.getOrderStatus() != OrderEnum.DjdOrderStatus.getValue())
             return new ResultResponse(-1, "订单不是待接单状态");
         //订单已经加入帮客了
         if (order.getProviderId() != 0)
@@ -91,7 +95,7 @@ public class OrderController {
             return new ResultResponse(-1, "不能接自己创建的订单");
 
         order.setProviderId(userId);
-        order.setOrderStatus(1);
+        order.setOrderStatus(OrderEnum.YjdOrderStatus.getValue());
         orderService.editOrder(order);
         return new ResultResponse(0, order);
     }
@@ -155,7 +159,4 @@ public class OrderController {
         orderService.createOrder(order);
         return new ResultResponse(0, order);
     }
-
-
-
 }

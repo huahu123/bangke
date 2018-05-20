@@ -10,7 +10,7 @@ import java.util.List;
  * @DATE 下午8:23
  */
 public class NeiborUtil {
-    public static List<BigDecimal> getNeiborPoi(BigDecimal longitude, BigDecimal latitude, double dis) {
+    public static List<BigDecimal>  getNeiborPoi(BigDecimal longitude, BigDecimal latitude, double dis) {
         double latitudeDouble = latitude.doubleValue();
         double longitudeDouble = longitude.doubleValue();
         //先计算查询点的经纬度范围
@@ -21,8 +21,8 @@ public class NeiborUtil {
         dlat = dlat*180/Math.PI;
         BigDecimal minlat =BigDecimal.valueOf(latitudeDouble-dlat);
         BigDecimal maxlat = BigDecimal.valueOf(latitudeDouble+dlat);
-        BigDecimal minlng = BigDecimal.valueOf(latitudeDouble + dlng);
-        BigDecimal maxlng = BigDecimal.valueOf(latitudeDouble - dlng);
+        BigDecimal minlng = BigDecimal.valueOf(latitudeDouble - Math.abs(dlng));
+        BigDecimal maxlng = BigDecimal.valueOf(latitudeDouble + Math.abs(dlng));
         return new ArrayList<>(Arrays.asList(minlng, maxlng, minlat, maxlat));
     }
 

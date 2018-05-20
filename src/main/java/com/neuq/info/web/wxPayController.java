@@ -104,7 +104,7 @@ public class wxPayController {
                         +"&nonceStr=" + randomNonceStr
                         + "&package=prepay_id=" + prepayId
                         + "&signType=MD5&timeStamp=" + timeStamp;
-                String paySign=CommonUtil.sign(stringSignTemp, "&key=" + WxPayConfig.APP_KEY, "utf-8").toUpperCase();
+                String paySign=CommonUtil.sign(stringSignTemp, "&key=" + WxPayConfig.KEY_REFUND, "utf-8").toUpperCase();
                 map.put("paySign", paySign);
             }
         }

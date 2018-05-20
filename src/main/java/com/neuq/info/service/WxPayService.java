@@ -9,6 +9,7 @@ import com.neuq.info.entity.Order;
 import com.neuq.info.entity.PayInfo;
 import com.neuq.info.entity.RefundInfo;
 import com.neuq.info.entity.User;
+import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -33,7 +34,6 @@ import java.util.Map;
  * @author Lin Dexiang
  * @date 2018/5/11
  */
-
 @Service
 public class WxPayService {
 
