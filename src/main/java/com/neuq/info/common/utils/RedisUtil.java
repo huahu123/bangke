@@ -32,17 +32,17 @@ public class RedisUtil {
        * 初始化Redis连接池
        */
              static {
-                 try {
-                         JedisPoolConfig config = new JedisPoolConfig();
-                         config.setMaxTotal(MAX_ACTIVE);
-                         config.setMaxIdle(MAX_IDLE);
-                         config.setMaxWaitMillis(MAX_WAIT);
-                         config.setTestOnBorrow(TEST_ON_BORROW);
-                         jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT);
-                     } catch (Exception e) {
-                         e.printStackTrace();
-                     }
-             }
+        try {
+            JedisPoolConfig config = new JedisPoolConfig();
+            config.setMaxTotal(MAX_ACTIVE);
+            config.setMaxIdle(MAX_IDLE);
+            config.setMaxWaitMillis(MAX_WAIT);
+            config.setTestOnBorrow(TEST_ON_BORROW);
+            jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
              /**
        * 获取Jedis实例
