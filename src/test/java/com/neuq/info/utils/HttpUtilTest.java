@@ -2,11 +2,11 @@ package com.neuq.info.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.neuq.info.common.utils.HttpUtil;
+import com.neuq.info.common.utils.PublicKeyUtil;
+import com.neuq.info.common.utils.wxPayUtil.HttpUtil;
 import com.neuq.info.config.WxPayConfig;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -18,7 +18,6 @@ import org.junit.Test;
 import javax.net.ssl.SSLContext;
 import java.io.*;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -139,6 +138,11 @@ public class HttpUtilTest {
         } finally {
             httpclient.close();
         }
+    }
+
+    @Test
+    public void getPublickeyTest() throws Exception {
+        PublicKeyUtil.getPublicKey();
     }
 
 }

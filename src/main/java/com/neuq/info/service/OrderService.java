@@ -1,8 +1,10 @@
 package com.neuq.info.service;
 
+import com.neuq.info.entity.User;
 import com.neuq.info.enums.OrderEnum;
 import com.neuq.info.dao.OrderDao;
 import com.neuq.info.entity.Order;
+import com.neuq.info.enums.TemplateMsgEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,13 @@ import java.util.List;
 public class OrderService {
 
     @Autowired
+    private TemplateMsgService templateMsgService;
+
+    @Autowired
     private OrderDao orderDao;
+
+    @Autowired
+    private UserService userService;
 
     public int createOrder(Order order) {
         return orderDao.insert(order);
@@ -45,6 +53,9 @@ public class OrderService {
     public void cancelOrder(Order order) {
         order.setOrderStatus(OrderEnum.YqxOrderStatus.getValue());
         orderDao.updateByOrderId(order);
+        User user = userService.queryUserByUserId(order.getCustomerId());
+        //发送取消订单的模版
+        templateMsgService.sendMsg(order, user, TemplateMsgEnum.QXOrderStatus);
     }
 
 }

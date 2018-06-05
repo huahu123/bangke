@@ -23,7 +23,7 @@ import java.util.List;
  * @date 2018/5/5
  */
 
-@Component("taskJob")
+@Component("TaskJob")
 public class TaskJob {
 
     @Autowired

@@ -154,4 +154,28 @@ public class CommonUtil {
         }
     }
 
+    /**
+     * @param parameters 将请求参数转换为请求报文
+     */
+    public static String getRequestXml(SortedMap<String, String> parameters)
+            throws Exception {
+        StringBuffer sb = new StringBuffer();
+        sb.append("<xml>");
+        Set es = parameters.entrySet();
+        Iterator it = es.iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+            String k = (String) entry.getKey();
+            String v = (String) entry.getValue();
+            if ("mch_id".equalsIgnoreCase(k) || "nonce_str".equalsIgnoreCase(k)
+                    || "sign".equalsIgnoreCase(k)) {
+                sb.append("<" + k + ">" + "<![CDATA[" + v + "]]></" + k + ">");
+            } else {
+                sb.append("<" + k + ">" + v + "</" + k + ">");
+            }
+        }
+        sb.append("</xml>");
+        return sb.toString();
+    }
+
 }

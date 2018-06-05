@@ -102,5 +102,9 @@ public class Order{
     @ApiModelProperty(value = "查询的终止精度，范围查询使用")
     private BigDecimal maxlat;
 
+    public double getAllFee() {
+        return fee + extraFee;
+    }
+
 
 }

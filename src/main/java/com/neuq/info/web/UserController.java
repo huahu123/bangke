@@ -1,10 +1,13 @@
 package com.neuq.info.web;
 
+import com.neuq.info.config.WxPayConfig;
 import com.neuq.info.enums.OrderEnum;
 import com.neuq.info.dto.ResultResponse;
 import com.neuq.info.entity.Order;
 import com.neuq.info.entity.User;
+import com.neuq.info.enums.TemplateMsgEnum;
 import com.neuq.info.service.OrderService;
+import com.neuq.info.service.TemplateMsgService;
 import com.neuq.info.service.UserService;
 import com.neuq.info.service.WxPayService;
 import io.swagger.annotations.Api;
@@ -37,6 +40,9 @@ public class UserController {
 
     @Autowired
     private WxPayService wxPayService;
+
+    @Autowired
+    private TemplateMsgService templateMsgService;
 
     @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
@@ -148,7 +154,27 @@ public class UserController {
         Float fee = (float)((savedOrder.getExtraFee() + savedOrder.getFee()));
         user.setMoney(user.getMoney() + fee);
         userService.updateUser(user);//付钱到电子钱包
+        //发送订单完成
+        templateMsgService.sendMsg(savedOrder, user, TemplateMsgEnum.WCOrderStatus);
         return new ResultResponse(0, "完成订单");
     }
+
+    @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
+    @ApiOperation(value = "帮客提现")
+    @RequestMapping(value = "/Provider/withdrawDeposit", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @ResponseBody
+    public ResultResponse myProviderOrder(@RequestParam String cardId, @RequestParam String name, @RequestParam String bankId, @RequestParam Integer amount,
+                                          HttpServletRequest request) {
+
+        Long userId = (Long) request.getAttribute("userId");
+        User user = userService.queryUserByUserId(userId);
+
+        if (!WxPayConfig.bank.containsValue(bankId))
+            return new ResultResponse(-1, "不支持该银行提现");
+
+
+    }
+
+
 
 }

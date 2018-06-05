@@ -2,13 +2,16 @@ package com.neuq.info.common.utils.wxPayUtil;
 
 import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyManagementException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.neuq.info.config.WxPayConfig;
 import org.apache.http.Consts;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -23,14 +26,17 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 
 public class HttpUtil {
 
@@ -38,11 +44,9 @@ public class HttpUtil {
 	public static final String USERAGENT_FIREFOX = "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:39.0) Gecko/20100101 Firefox/39.0";  
 	public static final String USERAGENT_IE = "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko";  
 	
-	private CloseableHttpClient httpClient;
 
 	private BasicCookieStore cookieStore;
-	private HttpGet get;
-	private HttpPost post;
+
 
     public static StringBuffer httpsRequest(String requestUrl, String requestMethod, String output) throws IOException {
         URL url = new URL(requestUrl);
@@ -117,43 +121,7 @@ public class HttpUtil {
 		
 	}
 
-	public HttpResult doPost(String url, Map<String, String> headers, Map<String, String> postData, String encoding) throws Exception {
 
-		if (url == null|| url.equals("")) {
-			return null;
-		}
-		if (encoding == null|| encoding.equals("")) {
-			encoding = "utf-8";
-		}
-		
-		SSLContextBuilder builder = new SSLContextBuilder();
-		builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build());
-		cookieStore = new BasicCookieStore();
-		CloseableHttpClient httpClient = HttpClients.custom().setDefaultCookieStore(cookieStore)
-				.setSSLSocketFactory(sslsf).build();
-
-		post = new HttpPost(url);
-		List<NameValuePair> list = new ArrayList<NameValuePair>();
-		for (String tmp : postData.keySet()) {
-			list.add(new BasicNameValuePair(tmp, postData.get(tmp)));
-		}
-		post.setEntity(new UrlEncodedFormEntity(list, encoding));
-		post.setHeaders(parseHeader(headers));
-
-		CloseableHttpResponse response = httpClient.execute(post);
-		HttpEntity entity = response.getEntity();
-
-		HttpResult result = new HttpResult();
-		result.setCookies(cookieStore.getCookies());
-		result.setStatusCode(response.getStatusLine().getStatusCode());
-		result.setHeaders(response.getAllHeaders());
-		result.setBody(EntityUtils.toString(entity, encoding));
-
-		close(entity, response);
-
-		return result;
-	}
 
 	private String parseParams(Map<String, String> params) {
 		if (params == null || params.isEmpty()) {
@@ -206,61 +174,115 @@ public class HttpUtil {
 		}
 	}
 
-	
 	/**
-	 * 下载文件
-	 * @param url 下载文件的链接
-	 * @param destFile 包含路径的目标文件名
-	 * @param headers 请求头
-	 * @return 
-	 */
-	public HttpResult downloadFile(String url, String destFile, Map<String, String> headers) throws Exception {
-		
-		SSLContextBuilder builder = new SSLContextBuilder();
-		builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(builder.build());
-		BasicCookieStore cookieStore = new BasicCookieStore();
-		CloseableHttpClient httpclient = HttpClients.custom().setDefaultCookieStore(cookieStore).setSSLSocketFactory(sslsf).build();
-		
-		HttpGet get = new HttpGet(url);
-		get.setHeaders(parseHeader(headers));
-		InputStream input = null;
-		CloseableHttpResponse response = null;
-		HttpResult result = null;
-		
+	 * 带证书请求
+	 * @param url 请求地址
+	 * @param xmlParam 请求参数
+	 * */
+
+	public static StringBuffer httpClientCustomSSL(String url, String xmlParam) {
+		StringBuffer sb = new StringBuffer();
 		try {
-			response = httpclient.execute(get);
-			HttpEntity entity = response.getEntity();
-			input = entity.getContent();
-			File file = new File(destFile);
-			
-			FileOutputStream fos = new FileOutputStream(file);
-			int len = -1;
-			byte[] tmp = new byte[1024];
-			while((len=input.read(tmp)) != -1) {
-				fos.write(tmp, 0, len);
-			}
-			fos.flush();
-			fos.close();
-			
-			result = new HttpResult();
-			result.setCookies(cookieStore.getCookies());
-			result.setStatusCode(response.getStatusLine().getStatusCode());
-			result.setHeaders(response.getAllHeaders());
-			result.setBody(EntityUtils.toString(entity, Consts.UTF_8));
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
+			KeyStore keyStore = KeyStore.getInstance("PKCS12");
+			FileInputStream instream = new FileInputStream(new File(WxPayConfig.KEY_PATH));
 			try {
-				if(input != null) {
-					input.close();
+				keyStore.load(instream, WxPayConfig.MCH_ID.toCharArray());
+			} finally {
+				instream.close();
+			}
+
+			// 证书
+			SSLContext sslcontext = SSLContexts.custom()
+					.loadKeyMaterial(keyStore, WxPayConfig.MCH_ID.toCharArray())
+					.build();
+			// 只允许TLSv1协议
+			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+					sslcontext,
+					new String[]{"TLSv1"},
+					null,
+					SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+			//创建基于证书的httpClient,后面要用到
+			CloseableHttpClient client = HttpClients.custom()
+					.setSSLSocketFactory(sslsf)
+					.build();
+
+			HttpPost httpPost = new HttpPost(url);//请求接口
+			StringEntity reqEntity = new StringEntity(xmlParam);
+			// 设置类型
+			reqEntity.setContentType("application/x-www-form-urlencoded");
+			httpPost.setEntity(reqEntity);
+			CloseableHttpResponse response = client.execute(httpPost);
+			try {
+				HttpEntity entity = response.getEntity();
+				System.out.println(response.getStatusLine());
+				if (entity != null) {
+					BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entity.getContent(), "UTF-8"));
+					String text = "";
+					while ((text = bufferedReader.readLine()) != null) {
+						sb.append(text);
+					}
 				}
-				if(response != null) {
-					response.close();
-				}
-			} catch (IOException e) {
+				EntityUtils.consume(entity);
+			} catch (Exception e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					response.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return sb;
+	}
+
+	/**
+	 * 向指定URL发送GET方法的请求
+	 *
+	 * @param url
+	 *            发送请求的URL
+	 * @param param
+	 *            请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
+	 * @return URL 所代表远程资源的响应结果
+	 */
+	public static String sendGet(String url, String param) {
+		String result = "";
+		BufferedReader in = null;
+		try {
+			String urlNameString = url + "?" + param;
+			URL realUrl = new URL(urlNameString);
+			System.out.println(realUrl);
+			// 打开和URL之间的连接
+			URLConnection connection = realUrl.openConnection();
+
+			// 设置通用的请求属性
+			connection.setRequestProperty("accept", "*/*");
+			connection.setRequestProperty("connection", "Keep-Alive");
+			connection.setRequestProperty("user-agent",
+					"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			// 建立实际的连接
+			connection.connect();
+			// 定义 BufferedReader输入流来读取URL的响应
+			in = new BufferedReader(new InputStreamReader(
+					connection.getInputStream()));
+			String line;
+			while ((line = in.readLine()) != null) {
+				result += line;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		// 使用finally块来关闭输入流
+		finally {
+			try {
+				if (in != null) {
+					in.close();
+				}
+
+			} catch (Exception e2) {
+				e2.printStackTrace();
 			}
 		}
 		return result;

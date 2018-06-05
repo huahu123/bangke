@@ -6,11 +6,14 @@ import com.neuq.info.common.utils.NeiborUtil;
 import com.neuq.info.common.utils.OrderUtil;
 import com.neuq.info.dto.ResultResponse;
 import com.neuq.info.entity.Order;
+import com.neuq.info.enums.TemplateMsgEnum;
 import com.neuq.info.service.OrderService;
+import com.neuq.info.service.TemplateMsgService;
 import com.neuq.info.service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.log4j.Log4j;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +31,7 @@ import java.util.List;
  * on 下午9:39
  */
 
+@Log4j
 @Controller
 @RequestMapping("/Order")
 @Api(value = "订单相关的API")
@@ -36,7 +40,12 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    @Autowired
+    private TemplateMsgService templateMsgService;
+
+    @Autowired
+    private UserService userService;
+
 
 
     @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
@@ -80,6 +89,7 @@ public class OrderController {
     public ResultResponse submitOrder(@RequestParam String orderId, HttpServletRequest request) {
 
         Long userId = (Long) request.getAttribute("userId");
+        User user = userService.queryUserByUserId(userId);
         Order order = orderService.findOrderByOrderId(orderId);
         //订单不存在
         if (order == null)
@@ -97,6 +107,8 @@ public class OrderController {
         order.setProviderId(userId);
         order.setOrderStatus(OrderEnum.YjdOrderStatus.getValue());
         orderService.editOrder(order);
+        //发送接单通知
+        templateMsgService.sendMsg(order, user, TemplateMsgEnum.JDOrderStatus);
         return new ResultResponse(0, order);
     }
 

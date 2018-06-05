@@ -6,7 +6,9 @@ import com.neuq.info.common.utils.wxPayUtil.*;
 import com.neuq.info.config.WxPayConfig;
 import com.neuq.info.entity.Order;
 import com.neuq.info.entity.User;
+import com.neuq.info.enums.TemplateMsgEnum;
 import com.neuq.info.service.OrderService;
+import com.neuq.info.service.TemplateMsgService;
 import com.neuq.info.service.UserService;
 import com.neuq.info.service.WxPayService;
 import io.swagger.annotations.Api;
@@ -53,6 +55,9 @@ public class wxPayController {
 
     @Autowired
     private WxPayService wxPayService;
+
+    @Autowired
+    private TemplateMsgService templateMsgService;
 
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -124,6 +129,7 @@ public class wxPayController {
     public Boolean paySuccess(@RequestParam(name = "orderId") String orderId,
                                   HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
+        User user = userService.queryUserByUserId(userId);
         Order order = orderService.findOrderByOrderId(orderId);
         if (null == order || order.getPayStatus() != PAY_WZF || order.getOrderStatus() != ORDER_WZF) {
             return false;
@@ -133,6 +139,8 @@ public class wxPayController {
         order.setOrderStatus(ORDER_DJD);
         orderService.editOrder(order);
         log.info("----支付成功-----");
+        //发送订单支付成功通知
+        templateMsgService.sendMsg(order, user, TemplateMsgEnum.ZFCGOrderStatus);
         return true;
     }
 

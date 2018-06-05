@@ -1,5 +1,8 @@
 package com.neuq.info.dao;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.neuq.info.common.utils.wxPayUtil.HttpUtil;
+import com.neuq.info.config.WxPayConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,10 +10,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by lihang on 2017/4/4.
@@ -67,6 +71,29 @@ public class RedisDaoTest {
             System.out.println(entry.getKey() + " - " + entry.getValue());
         }
         System.out.println("---------------");
+    }
+
+    @Test
+    public void getAccessTokenTest() {
+        String accessToken = (String)redisTemplate.opsForValue().get(WxPayConfig.ACCESS_TOKEN_REDIS_KEY);
+        if (null == accessToken || accessToken.length() == 0) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("grant_type=").append("client_credential");
+            sb.append("&appid=").append(WxPayConfig.APP_ID);
+            sb.append("&secret=").append(WxPayConfig.APP_SECRET);
+            String res = HttpUtil.sendGet(WxPayConfig.URL_ACCESS_TOKEN, sb.toString());
+            if (res == null || res.equals("")) {
+                return;
+            }
+            try {
+                Map map = new ObjectMapper().readValue(res, Map.class);
+                accessToken = (String) map.get("access_token");
+                Long expires_in = Long.valueOf(map.get("expires_in").toString());
+                redisTemplate.opsForValue().set(WxPayConfig.ACCESS_TOKEN_REDIS_KEY, accessToken, expires_in, TimeUnit.SECONDS);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

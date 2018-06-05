@@ -38,12 +38,16 @@
     <context:component-scan base-package="com.neuq.info.web"/>
 
     <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/wx/decodeUserInfo"/>
+            <bean class="com.neuq.info.interceptor.AllInterceptor"/> <!--定义了allinte这个拦截起，另外一个没用-->
+        </mvc:interceptor>
         <!-- 使用bean定义一个Interceptor，直接定义在mvc:interceptors根下面的Interceptor将拦截所有的请求 -->
-        <bean class="com.neuq.info.interceptor.AllInterceptor"/> <!--定义了allinte这个拦截起，另外一个没用-->
         <mvc:interceptor>
             <mvc:mapping path="/**"/>
             <mvc:exclude-mapping path="/wx/getSession"/>
             <mvc:exclude-mapping path="/wx/decodeUserInfo"/>
+
             <!---->
             <!---->
             <!--order先不过滤-->

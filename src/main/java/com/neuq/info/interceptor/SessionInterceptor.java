@@ -1,12 +1,11 @@
 package com.neuq.info.interceptor;
 
-import com.neuq.info.dao.RedisDao;
 import com.neuq.info.dao.UserDao;
 import com.neuq.info.entity.User;
 import com.neuq.info.enums.ErrorStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -18,21 +17,24 @@ import java.io.PrintWriter;
 /**
  * Created by lihang on 2017/4/19.
  */
+@Log4j
 public class SessionInterceptor implements HandlerInterceptor {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+//    @Autowired
+//    private RedisDao redisDao;
     @Autowired
-    private RedisDao redisDao;
+    private RedisTemplate redisTemplate;
     @Autowired
     private UserDao userDao;
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object object) throws Exception {
 
         String session = request.getHeader("session");
-        logger.info("请求的session为[{}]",session);
+        log.info("请求的session为" + session);
         if (session != null && session != "") {
-            Object wxSessionObj = redisDao.get(session);
+            String wxSessionObj = (String) redisTemplate.opsForValue().get(session);
+//            Object wxSessionObj = redisDao.get(session);
             if (wxSessionObj == null) {
-                logger.info("{}已过期",session);
+                log.info(session + "已过期");
                 getResStr(ErrorStatus.user_identity_expired, response);
                 return false;
             } else {
@@ -40,7 +42,7 @@ public class SessionInterceptor implements HandlerInterceptor {
                 String openId = wxSessionStr.split("#")[1];
                 User user = userDao.queryUserByOpenId(openId);
                 if (user != null) {
-                    logger.info("此次请求的用户id为{},openid为{}",user.getUserId(),user.getOpenId());
+                    log.info("此次请求的用户id为" + user.getUserId() + ", openid为" + user.getOpenId());
                     request.setAttribute("userId", user.getUserId());
                     return true;
                 } else {
@@ -49,7 +51,7 @@ public class SessionInterceptor implements HandlerInterceptor {
                 }
             }
         } else {
-            logger.warn("请求数据中session参数为空");
+            log.warn("请求数据中session参数为空");
             getResStr(ErrorStatus.user_identity_expired, response);
             return false;
         }

@@ -1,7 +1,7 @@
 package com.neuq.info.interceptor;
 
-import com.neuq.info.dao.RedisDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
@@ -10,14 +10,17 @@ import org.springframework.web.context.request.WebRequestInterceptor;
  * Created by lihang on 2017/4/24.
  */
 public class AllInterceptor implements WebRequestInterceptor {
+//    @Autowired
+//    private RedisDao redisDao;
     @Autowired
-    private RedisDao redisDao;
+    private RedisTemplate redisTemplate;
 
     public void preHandle(WebRequest request) throws Exception {
 
         String session = request.getHeader("session");
         if (session != null && session != "") {
-            Object wxSessionObj = redisDao.get(session);
+//            Object wxSessionObj = redisDao.get(session);
+            Object wxSessionObj = redisTemplate.opsForValue().get("session");
             if (wxSessionObj != null) {
                 String wxSessionStr = (String) wxSessionObj;
                 String sessionKey = wxSessionStr.split("#")[0];
