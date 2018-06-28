@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neuq.info.dao.WithdrawDespositDao">
+
+  <insert id="insertWithdrawDesposit" parameterType="com.neuq.info.entity.WithdrawDeposit">
+
+    insert into T_WithDrawDesposit (CardId, Name, UserId, BankId, Money, State, Comment)
+    VALUES (#{withdrawDesposit.cardId}, #{withdrawDesposit.name}, #{withdrawDesposit.userId},
+            #{withdrawDesposit.bankId}, #{withdrawDesposit.money}, #{withdrawDesposit.state},
+            #{withdrawDesposit.comment})
+  </insert>
+
+</mapper>

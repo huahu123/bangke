@@ -23,4 +23,15 @@ public enum PayEnum {
     public Integer getValue() {
         return value;
     }
+
+    public static PayEnum getPayEnum(Integer value) {
+        if (value == null)
+            return null;
+        if (value == 0)
+            return UnPayStatus;
+        else if (value == 1)
+            return AlreadyPayStatsu;
+        else
+            return null;
+    }
 }

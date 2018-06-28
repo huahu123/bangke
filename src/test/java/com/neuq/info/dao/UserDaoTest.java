@@ -39,7 +39,7 @@ public class UserDaoTest {
                 "    \"country\": \"CN\",\n" +
                 "    \"nickname\": \"生活总要向前看\"\n" +
                 "}", User.class);
-        userDao.insert(user);
+        userDao.insertUser(user);
     }
 
     @Test
@@ -51,50 +51,10 @@ public class UserDaoTest {
         System.out.println(users.size());
     }
 
-//
-//    @Test
-//    public void queryUserByOpenid() throws Exception {
-//        User user = userDao.queryUserByOpenId("111");
-//        System.out.println(user);
-//    }
-//
-//    @Test
-//    public void queryUserByUnionid() throws Exception {
-//        User user = userDao.queryUserByUnionId("111");
-//        System.out.println(user);
-//    }
-//
-//    @Test
-//    public void queryAllUserByGender() throws Exception {
-//        List<User> list = userDao.queryAllUserByGender("1");
-//        System.out.println(list.size());
-//    }
-//
-//    @Test
-//    public void updateUser() throws Exception {
-//        User user = new User();
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        user = objectMapper.readValue("{\n" +
-//                "    \"province\": \"Hebei\",\n" +
-//                "    \"openId\": \"oCC_80BgpK_JZy06GIcy3cAUQnNM\",\n" +
-//                "    \"language\": \"zh_CN\",\n" +
-//                "    \"city\": \"Qinhuangdao\",\n" +
-//                "    \"gender\": 1,\n" +
-//                "    \"avatarUrl\": \"http://wx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTKicBVNZ9cq6cLSAyjbDR1rSRnNpkNZNW3x9PSRAxYJFtsykBBuia6RDqrkJS6UA778QbDwCsdjlfrg/0\",\n" +
-//                "    \"watermark\": {\n" +
-//                "        \"timestamp\": 1492792057,\n" +
-//                "        \"appid\": \"wx22c990cbb6b3c918\"\n" +
-//                "    },\n" +
-//                "    \"country\": \"CN\",\n" +
-//                "    \"nickName\": \"生活总要向前看11\"\n" +
-//                "}", User.class);
-//        int res = userDao.updateUser(user);
-//        System.out.println(res);
-//    }
-
     @Test
-    public void testSelectCreateValue() {
-        System.out.println(        userDao.selectCreateValue( 20L));
+    public void testQueryUserByOpenId() {
+        User user = userDao.queryUserByOpenId("oPkMC0c3pAPdBUyeB7Q6xWfZcSH0");
+        System.out.println(user.toString());
     }
 
 

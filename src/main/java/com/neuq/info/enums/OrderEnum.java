@@ -28,4 +28,23 @@ public enum OrderEnum {
     public Integer getValue() {
         return value;
     }
+
+    public static OrderEnum getOrderEnum(Integer value) {
+        if (value == null)
+            return null;
+        switch (value) {
+            case 0:
+                return WzfOrderStatus;
+            case 1:
+                return DjdOrderStatus;
+            case 2:
+                return YjdOrderStatus;
+            case 3:
+                return YwcOrderStatus;
+            case 4:
+                return YqxOrderStatus;
+            default:
+                return null;
+        }
+    }
 }

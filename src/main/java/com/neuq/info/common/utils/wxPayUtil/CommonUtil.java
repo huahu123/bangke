@@ -2,6 +2,7 @@ package com.neuq.info.common.utils.wxPayUtil;
 
 import com.neuq.info.entity.PayInfo;
 import com.neuq.info.entity.RefundInfo;
+import com.neuq.info.exception.SignException;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.core.util.QuickWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
@@ -110,7 +111,7 @@ public class CommonUtil {
      * @param str
      * @return
      */
-    public static String getMD5(String str) throws Exception {
+    public static String getMD5(String str) throws SignException {
         try {
             // 生成一个MD5加密计算摘要
             MessageDigest md = MessageDigest.getInstance("MD5");
@@ -120,7 +121,7 @@ public class CommonUtil {
             // BigInteger函数则将8位的字符串转换成16位hex值，用字符串来表示；得到字符串形式的hash值
             return new BigInteger(1, md.digest()).toString(16);
         } catch (Exception e) {
-            throw new Exception("MD5加密出现错误");
+            throw new SignException("MD5加密出现错误");
         }
     }
 
@@ -157,8 +158,7 @@ public class CommonUtil {
     /**
      * @param parameters 将请求参数转换为请求报文
      */
-    public static String getRequestXml(SortedMap<String, String> parameters)
-            throws Exception {
+    public static String getRequestXml(SortedMap<String, String> parameters) {
         StringBuffer sb = new StringBuffer();
         sb.append("<xml>");
         Set es = parameters.entrySet();

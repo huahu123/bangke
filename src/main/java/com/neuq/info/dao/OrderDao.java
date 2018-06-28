@@ -21,9 +21,6 @@ public interface OrderDao {
 
     List<Order> findNeighPositionByCondition(HashMap hashMap);
 
-
     List<Order> listOrderByCondition(HashMap hashmap);
-
-
 
 }

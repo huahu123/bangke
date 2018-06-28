@@ -9,17 +9,11 @@ import java.util.List;
 @Repository
 public interface UserDao {
 
-    int insert(User record);
+    int insertUser(@Param("user") User user);
 
-    int insertUser(User user);
-
-    User queryUserByUserId(long userId);
-
-    User queryUserByOpenId(String openId);
+    User queryUserByOpenId(@Param("openId")String openId);
 
     int updateUser(@Param("user") User user);
-
-    int selectCreateValue(Long autoId);
 
     List<User> queryAll(@Param("user")User user);
 

@@ -72,40 +72,6 @@ public class WxController {
         return rtnParam(ErrorStatus.exist, map);
     }
 
-//    /**
-//     * 验证用户信息完整性
-//     *
-//     * @param rawData   微信用户基本信息
-//     * @param signature 数据签名
-//     * @param sessionId 会话ID
-//     * @return
-//     */
-//    @RequestMapping(value = "/checkUserInfo", method = RequestMethod.GET, produces = "application/json")
-//    @ApiOperation(notes = "此API暂时不用", httpMethod = "GET", value = "此API暂时不用")
-//    @ApiImplicitParams({
-//            @ApiImplicitParam(name = "rawData", value = "小程序登录时获取的code", paramType = "query", dataType = "string"),
-//            @ApiImplicitParam(name = "signature", value = "小程序登录时获取的code", paramType = "query", dataType = "string"),
-//            @ApiImplicitParam(name = "sessionId", value = "小程序登录时获取的code", paramType = "query", dataType = "string")
-//    })
-//    @ResponseBody
-//    public Map<String, Object> checkUserInfo(@RequestParam(required = true, value = "rawData") String rawData,
-//                                             @RequestParam(required = true, value = "signature") String signature,
-//                                             @RequestParam(required = true, defaultValue = "sessionId") String sessionId) {
-//        Object wxSessionObj = redisDao.get(sessionId);
-//        if (null == wxSessionObj) {
-//            return rtnParam(ErrorStatus.user_identity_expired, null);
-//        }
-//        String wxSessionStr = (String) wxSessionObj;
-//        String sessionKey = wxSessionStr.split("#")[0];
-//        StringBuffer sb = new StringBuffer(rawData);
-//        sb.append(sessionKey);
-//
-//        byte[] encryData = DigestUtils.sha1(sb.toString());
-//        byte[] signatureData = signature.getBytes();
-//        Boolean checkStatus = Arrays.equals(encryData, signatureData);
-//        return rtnParam(ErrorStatus.exist, new HashMap().put("checkPass", checkStatus));
-//    }
-
     /**
      * 获取用户openId和unionId数据(如果没绑定微信开放平台，解密数据中不包含unionId)
      *
@@ -131,9 +97,7 @@ public class WxController {
         if (user1 == null) {
             return rtnParam(ErrorStatus.user_sensitive_data_decryption_failed, null);
         }
-//        System.out.println(user);
-//        System.out.println(user1);
-//        System.out.println(user.equals(user1));
+
         if(user==null){
             if(userService.insertUser(user1)==0){
                 return rtnParam(ErrorStatus.insertuserinfo_wrong, null);

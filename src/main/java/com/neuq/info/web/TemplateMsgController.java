@@ -38,7 +38,6 @@ public class TemplateMsgController {
                              HttpServletRequest request) {
 
         Long userId = (Long) request.getAttribute("userId");
-        log.info("收集的userId=" + userId.toString() + ", formId=" + formId);
         if (StringUtils.isBlank(formId))
             return false;
         redisTemplate.opsForList().leftPush(String.valueOf(userId), formId);

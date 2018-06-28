@@ -8,21 +8,20 @@ import com.neuq.info.common.utils.wxPayUtil.HttpUtil;
 import com.neuq.info.common.utils.wxPayUtil.RandomUtils;
 import com.neuq.info.common.utils.wxPayUtil.TimeUtils;
 import com.neuq.info.config.WxPayConfig;
-import com.neuq.info.entity.Order;
-import com.neuq.info.entity.PayInfo;
-import com.neuq.info.entity.RefundInfo;
-import com.neuq.info.entity.User;
+import com.neuq.info.entity.*;
+import com.neuq.info.enums.WithdrawDespositEnum;
+import com.neuq.info.exception.SignException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.reflection.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.security.PublicKey;
-import java.util.Date;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * @author Lin Dexiang
@@ -32,6 +31,9 @@ import java.util.TreeMap;
 public class WxPayService {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private WithdrawDespositService withdrawDespositService;
 
     /**
      * 调用统一下单接口
@@ -79,41 +81,41 @@ public class WxPayService {
     /**
      * 银行卡提现
      * */
-    public Map withDrawDesposit(String cardId, String name, String bankId, Integer money) throws Exception {
+    public void withDrawDesposit(WithdrawDeposit withdrawDeposit) throws Exception {
         //1~拼凑所需要传递的参数 map集合 ->查看API,传入参数哪些是必须的
-        String encBankAcctNo = cardId; //加密的银行账号
-        String encBankAcctName = name; //加密的银行账户名
-        String bank_code = bankId; //银行卡的编号~
+        String encBankAcctNo = withdrawDeposit.getCardId(); //加密的银行账号
+        String encBankAcctName = withdrawDeposit.getName(); //加密的银行账户名
+        String bank_code = withdrawDeposit.getBankId(); //银行卡的编号~
         String desc ="TCBK";//转账描述
         String partner_trade_no = RandomUtils.generateString(32);//生成随机号，
         //这里大家没有该方法的，建议使用UUID。随便输出不超过32位的字符串即可
         String nonce_str1 =  RandomUtils.generateString(32);//同上
         String mch_id = WxPayConfig.MCH_ID;//获取商务号的id
-        String amount = String.valueOf(money); //付款金额，单位是分
+        String amount = String.valueOf(withdrawDeposit.getMoney()/100); //付款金额，单位是分
 
-        //2.0 对“收款方银行卡号”、“收款方用户名”进行“采用标准RSA算法”【付款到银行卡，这点最难】
-        //定义自己公钥的路径
+        //2.0 对“收款方银行卡号”、“收款方用户名”进行“采用标准RSA算法”【付款到银行卡，这点最难】定义自己公钥的路径
         String keyfile = WxPayConfig.PKSC8_PUBLIC_PATH; //读取PKCS8密钥文件
         //RSA工具类提供了，根据加载PKCS8密钥文件的方法
         PublicKey pub = RSAUtil.getPubKey(keyfile, "RSA");
         //rsa是微信付款到银行卡要求我们填充的字符串
         String rsa = "RSA/ECB/OAEPWITHSHA-1ANDMGF1PADDING";
+
+        byte[] estr = new byte[0];
         try {
-            byte[] estr = RSAUtil.encrypt(encBankAcctNo.getBytes(), pub, 2048, 11, rsa);
-            //对银行账号进行加密
-            encBankAcctNo = Base64.encode(estr);//并转为base64格式
-            estr = RSAUtil.encrypt(encBankAcctName.getBytes("UTF-8"), pub, 2048, 11, rsa);
-            encBankAcctName = Base64.encode(estr); //对银行账户名加密并转为base64
-        } catch (UnsupportedEncodingException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        } catch (Exception e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
+            estr = RSAUtil.encrypt(encBankAcctNo.getBytes(), pub, 2048, 11, rsa);
+        } catch (Exception e) {
+            throw new SignException(String.format("userId: %s, 银行卡提现时签名失败", withdrawDeposit.getUserId()), e);
         }
+        //对银行账号进行加密
+        encBankAcctNo = Base64.encode(estr);//并转为base64格式
+        try {
+            estr = RSAUtil.encrypt(encBankAcctName.getBytes("UTF-8"), pub, 2048, 11, rsa);
+        } catch (Exception e) {
+            throw new SignException(String.format("userId: %s, 银行卡提现时对银行账户加密失败", withdrawDeposit.getUserId()), e);
+        }
+        encBankAcctName = Base64.encode(estr); //对银行账户名加密并转为base64
 
         //3.0   根据要传递的参数生成自己的签名
-
         SortedMap<String, String> parameters1 = new TreeMap<String, String>();
         parameters1.put("mch_id", mch_id);
         parameters1.put("partner_trade_no", partner_trade_no);
@@ -124,7 +126,9 @@ public class WxPayService {
         parameters1.put("amount", amount);
         parameters1.put("desc", desc);
         //直接调用签名方法，在上述第三个难点中可以找到哦
-        String sign = SignUtils.creatSign(parameters1);
+        String sign = null;
+        sign = SignUtils.creatSign(parameters1);
+
 
         //4.0 把签名放到map集合中【因为签名也要传递过去，看API】
         parameters1.put("sign", sign);
@@ -134,29 +138,25 @@ public class WxPayService {
 
         //6.0 发送请求到企业付款到银行的Api。发送请求是一个方法来的POST
         String wxUrl = WxPayConfig.WITHDRAW_DESPOSIT_URL; //获取退款的api接口
-        try {
-            //调用方法发送了 -- 在上述第三个难点推荐的文章有该方法
-            String weixinPost = HttpUtil.httpClientCustomSSL(wxUrl, reuqestXml).toString();
-            //7.0 解析返回的xml数据-- 在上述第三个难点推荐的文章有该方法
-            Map<String, String> result = CommonUtil.parseXml(weixinPost);
-            //8.0根据map中的result_code AND return_code来判断是否成功与失败~~写自己的逻辑
+        Map<String, String> result = new HashMap<>();
+        //调用方法发送了 -- 在上述第三个难点推荐的文章有该方法
+        String weixinPost = HttpUtil.httpClientCustomSSL(wxUrl, reuqestXml).toString();
+        //7.0 解析返回的xml数据-- 在上述第三个难点推荐的文章有该方法
+        result = CommonUtil.parseXml(weixinPost);
+        //8.0根据map中的result_code AND return_code来判断是否成功与失败~~写自己的逻辑
 
-            if ("SUCCESS".equalsIgnoreCase(result.get("result_code"))
-                    &&
-                    "SUCCESS".equalsIgnoreCase(result.get("return_code"))) {
-                //8表示退款成功
-                //TODO写自己的逻辑
-                //TODO 更改自己的申请单状态，生成记录等等
+        if ("SUCCESS".equalsIgnoreCase(result.get("result_code"))
+                &&
+                "SUCCESS".equalsIgnoreCase(result.get("return_code"))) {
 
-            } else {
-                //9 表示退款失败
-                //TODO 调用service的方法 ，存储失败提现的记录咯
-            }
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            withdrawDeposit.setComment("转账成功");
+            withdrawDeposit.setStatus(WithdrawDespositEnum.Success.getValue());
+        } else {
+            //9 表示退款失败
+            withdrawDeposit.setComment(result.get("return_msg"));
+            withdrawDeposit.setStatus(WithdrawDespositEnum.Fail.getValue());
         }
+        withdrawDespositService.insertWithdrawDesposit(withdrawDeposit);
     }
 
 
