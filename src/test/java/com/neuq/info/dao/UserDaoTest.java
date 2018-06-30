@@ -48,7 +48,7 @@ public class UserDaoTest {
                 .userId(10l)
                 .build();
         List<User> users = userDao.queryAll(query);
-        System.out.println(users.size());
+        System.out.println(users.get(0).getMoney());
     }
 
     @Test

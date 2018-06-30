@@ -194,7 +194,7 @@ public class UserController {
 
     @ApiImplicitParam(name = "session", value = "session", required = true, paramType = "header", dataType = "string")
     @ApiOperation(value = "帮客提现, 输入的金额以分为单位")
-    @RequestMapping(value = "/Provider/withdrawDeposit", method = RequestMethod.GET, produces = {"application/json;charset=UTF-8"})
+    @RequestMapping(value = "/Provider/withdrawDeposit", method = RequestMethod.POST, produces = {"application/json;charset=UTF-8"})
     @ResponseBody
     @Transactional
     public ResultResponse myProviderOrder(@RequestParam String cardId, @RequestParam String name, @RequestParam String bankId, @RequestParam Double money,

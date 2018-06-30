@@ -38,4 +38,5 @@ public class AllInterceptor implements WebRequestInterceptor {
     public void afterCompletion(WebRequest webRequest, Exception e) throws Exception {
 
     }
+
 }

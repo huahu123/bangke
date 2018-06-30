@@ -109,4 +109,14 @@ public class UploadController {
 //        res.put("success", true);
         return new ResultModel(ResultStatus.SUCCESS);
     }
+
+
+
+
+    public static void main(String[] args) {
+        System.out.println(123);
+        System.out.println(123);
+    }
+
+
 }

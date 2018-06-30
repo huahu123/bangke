@@ -145,13 +145,13 @@ public class OrderController {
                                       @RequestParam(required = true) Integer restaurantPeople,
                                       @RequestParam(required = true) String startTime,
                                       @RequestParam(required = true) String arriveTime,
-                                      @RequestParam(required = true) Integer queueType,
+                                      @RequestParam(required = true, defaultValue = "1") Integer queueType,
                                       @RequestParam(required = true) String contactName,
                                       @RequestParam(required = true) String phoneNum,
-                                      @RequestParam(required = true) Byte gender,
+                                      @RequestParam(required = true, defaultValue = "0") Byte gender,
                                       @RequestParam(required = true) String comment,
-                                      @RequestParam(required = true) Double fee,
-                                      @RequestParam(required = true) Double extraFee,
+                                      @RequestParam(required = true, defaultValue = "0") Double fee,
+                                      @RequestParam(required = true, defaultValue = "0") Double extraFee,
                                       HttpServletRequest request) {
         try {
             Long userId = (Long) request.getAttribute("userId");
@@ -160,7 +160,6 @@ public class OrderController {
                     DateTimeUtil.DEFAULT_DATE_TIME_HHmm_FORMAT_PATTERN).toDate();
             et = DateTimeUtil.parseDateTime(arriveTime,
                     DateTimeUtil.DEFAULT_DATE_TIME_HHmm_FORMAT_PATTERN).toDate();
-
             if (et.before(st))
                 return new ResultResponse(-1, false, "到达时间不能早于开始时间");
             if (st.before(DateTime.now().toDate()) || et.before(DateTime.now().toDate()))
@@ -189,6 +188,8 @@ public class OrderController {
             return new ResultResponse(0, true, order);
         } catch (ParseException e) {
             return new ResultResponse(-1, false, "日期格式错误");
+        } catch (Exception e) {
+            return new ResultResponse(-1, false, "下单失败");
         }
     }
 }
