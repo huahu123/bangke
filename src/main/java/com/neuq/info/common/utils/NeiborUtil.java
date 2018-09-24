@@ -21,8 +21,8 @@ public class NeiborUtil {
         dlat = dlat*180/Math.PI;
         BigDecimal minlat =BigDecimal.valueOf(latitudeDouble-dlat);
         BigDecimal maxlat = BigDecimal.valueOf(latitudeDouble+dlat);
-        BigDecimal minlng = BigDecimal.valueOf(latitudeDouble - Math.abs(dlng));
-        BigDecimal maxlng = BigDecimal.valueOf(latitudeDouble + Math.abs(dlng));
+        BigDecimal minlng = BigDecimal.valueOf(longitudeDouble - Math.abs(dlng));
+        BigDecimal maxlng = BigDecimal.valueOf(longitudeDouble + Math.abs(dlng));
         return new ArrayList<>(Arrays.asList(minlng, maxlng, minlat, maxlat));
     }
 

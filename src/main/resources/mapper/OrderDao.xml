@@ -123,6 +123,7 @@
           AND Longitude>=#{order.minlng} AND Longitude &lt;= #{order.maxlng}
           AND Latitude &gt;= #{order.minlat} AND Latitude &lt;= #{order.maxlat}
         </if>
+        order by UpdateTime DESC
       </where>
   </select>
 

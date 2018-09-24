@@ -49,7 +49,6 @@ public class OrderService {
         return orderDao.queryAll(order);
     }
 
-    //TODO
     public void cancelOrder(Order order) {
         order.setOrderStatus(OrderEnum.YqxOrderStatus.getValue());
         orderDao.updateByOrderId(order);

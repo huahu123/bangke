@@ -91,7 +91,7 @@ public class WxPayService {
         //这里大家没有该方法的，建议使用UUID。随便输出不超过32位的字符串即可
         String nonce_str1 =  RandomUtils.generateString(32);//同上
         String mch_id = WxPayConfig.MCH_ID;//获取商务号的id
-        String amount = String.valueOf(withdrawDeposit.getMoney()/100); //付款金额，单位是分
+        String amount = String.valueOf(withdrawDeposit.getMoney().intValue() * 100); //付款金额，单位是分
 
         //2.0 对“收款方银行卡号”、“收款方用户名”进行“采用标准RSA算法”【付款到银行卡，这点最难】定义自己公钥的路径
         String keyfile = WxPayConfig.PKSC8_PUBLIC_PATH; //读取PKCS8密钥文件
@@ -141,6 +141,7 @@ public class WxPayService {
         Map<String, String> result = new HashMap<>();
         //调用方法发送了 -- 在上述第三个难点推荐的文章有该方法
         String weixinPost = HttpUtil.httpClientCustomSSL(wxUrl, reuqestXml).toString();
+        log.info(weixinPost);
         //7.0 解析返回的xml数据-- 在上述第三个难点推荐的文章有该方法
         result = CommonUtil.parseXml(weixinPost);
         //8.0根据map中的result_code AND return_code来判断是否成功与失败~~写自己的逻辑
@@ -166,9 +167,6 @@ public class WxPayService {
         String timeStart = TimeUtils.getFormatTime(date, WxPayConfig.TIME_FORMAT);
         String timeExpire = TimeUtils.getFormatTime(TimeUtils.addDay(date, WxPayConfig.TIME_EXPIRE), WxPayConfig.TIME_FORMAT);
         String randomNonceStr = RandomUtils.generateMixString(32);
-
-        //重新totalFee为1分钱 TODO
-        totalFee = 500;
 
         PayInfo payInfo = new PayInfo();
         payInfo.setAppid(WxPayConfig.APP_ID);
@@ -196,8 +194,7 @@ public class WxPayService {
         String outTradeNo = order.getOrderId();
         String outRefundNo = outTradeNo;
         Integer totalFee = (int) ((order.getFee() + order.getExtraFee()) * 100);
-        //重写Fee TODO
-        totalFee = 1;
+
         RefundInfo refundInfo = RefundInfo.builder()
                 .appid(WxPayConfig.APP_ID)
                 .mch_id(WxPayConfig.MCH_ID)
@@ -230,7 +227,7 @@ public class WxPayService {
                 return "";
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(ExceptionUtils.getStackTrace(e));
             return "";
         }
         return "success";

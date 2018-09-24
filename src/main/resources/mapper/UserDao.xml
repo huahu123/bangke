@@ -59,7 +59,7 @@
         UnionId = #{user.unionId},
       </if>
       <if test="user.createValue!=null" >
-        CreateValue = #{user.createValu},
+        CreateValue = #{user.createValue},
       </if>
       <if test="user.money != null" >
         Money = #{user.money},

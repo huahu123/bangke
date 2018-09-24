@@ -9,7 +9,6 @@ import java.util.Date;
  */
 public class TimeUtils {
 
-    //TODO 都未处理输入参数
 
     public static String getFormatTime(Date date, String format) {
         SimpleDateFormat sdf = new SimpleDateFormat(format);

@@ -152,6 +152,7 @@ public class OrderController {
                                       @RequestParam(required = true) String comment,
                                       @RequestParam(required = true, defaultValue = "0") Double fee,
                                       @RequestParam(required = true, defaultValue = "0") Double extraFee,
+                                      @RequestParam(required = true, defaultValue = "") String images,
                                       HttpServletRequest request) {
         try {
             Long userId = (Long) request.getAttribute("userId");

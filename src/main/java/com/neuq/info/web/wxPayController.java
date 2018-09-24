@@ -19,8 +19,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.log4j.Log4j;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -108,8 +106,8 @@ public class wxPayController {
             String paySign = CommonUtil.sign(stringSignTemp, "&key=" + WxPayConfig.KEY_REFUND, "utf-8").toUpperCase();
             map.put("paySign", paySign);
 
-            content = mapper.writeValueAsString(map);
-            return new ResultResponse(0, true, content);
+
+            return new ResultResponse(0, true, "", map);
         } catch (Exception e) {
             log.error(String.format("error: %s", ExceptionUtils.getStackTrace(e)));
             return new ResultResponse(-1, false, e.getMessage());

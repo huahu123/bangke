@@ -4,9 +4,9 @@
 
   <insert id="insertWithdrawDesposit" parameterType="com.neuq.info.entity.WithdrawDeposit">
 
-    insert into T_WithDrawDesposit (CardId, Name, UserId, BankId, Money, State, Comment)
+    insert into T_WithDrawDesposit (CardId, Name, UserId, BankId, Money, Status, Comment)
     VALUES (#{withdrawDesposit.cardId}, #{withdrawDesposit.name}, #{withdrawDesposit.userId},
-            #{withdrawDesposit.bankId}, #{withdrawDesposit.money}, #{withdrawDesposit.state},
+            #{withdrawDesposit.bankId}, #{withdrawDesposit.money}, #{withdrawDesposit.status},
             #{withdrawDesposit.comment})
   </insert>
 

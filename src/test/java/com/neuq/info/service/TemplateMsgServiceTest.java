@@ -96,10 +96,8 @@ public class TemplateMsgServiceTest {
             estr = RSAUtil.encrypt(encBankAcctName.getBytes("UTF-8"), pub, 2048, 11, rsa);
             encBankAcctName = Base64.encode(estr); //对银行账户名加密并转为base64
         } catch (UnsupportedEncodingException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
         } catch (Exception e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
 
@@ -137,17 +135,14 @@ public class TemplateMsgServiceTest {
                     "SUCCESS".equalsIgnoreCase(result.get("return_code"))) {
                 //8表示退款成功
                 //TODO写自己的逻辑
-                //TODO 更改自己的申请单状态，生成记录等等
                 System.out.println("123");
             } else {
                 //9 表示退款失败
-                //TODO 调用service的方法 ，存储失败提现的记录咯
 
 
             }
 
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
