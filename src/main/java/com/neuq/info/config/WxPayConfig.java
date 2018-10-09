@@ -8,6 +8,14 @@ import java.util.Map;
  * @DATE 下午9:55
  */
 public class WxPayConfig {
+
+    public static final String ACCESSKEY = "4dml2wjLgP3G_zJAgY21QWM0fDwtFKIzrWc8Q7sh";
+
+    public static final String SECRETKEY = "863Orokjcuaz8GT8fZb6ldHHtFqTwdlDxsqg7vLK";
+
+    public static final String BUCKET_NAME = "tcbk-pic";
+
+
     public static final String APP_ID = "wx48000b86228fe774";
 
     public static final String APP_SECRET = "56660a838c0a74f96a8c1de3b84a295e";

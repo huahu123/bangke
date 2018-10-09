@@ -135,6 +135,9 @@ public class wxPayController {
                 return new ResultResponse(-1, false, String.format("订单的状态为%s, 支付失败", OrderEnum.getOrderEnum(order.getOrderStatus()).getName()));
             }
             //设置订单
+            //帮客支付
+
+            //买家支付
             order.setPayStatus(PayEnum.AlreadyPayStatsu.getValue());
             order.setOrderStatus(OrderEnum.DjdOrderStatus.getValue());
             orderService.editOrder(order);

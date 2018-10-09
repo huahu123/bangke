@@ -341,6 +341,12 @@
       <version>1.16.10</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.qiniu</groupId>
+      <artifactId>qiniu-java-sdk</artifactId>
+      <version>[7.0.0, 7.2.99]</version>
+    </dependency>
+
   </dependencies>
   <build>
     <finalName>TCBK</finalName>

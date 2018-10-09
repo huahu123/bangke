@@ -12,6 +12,9 @@ public enum OrderEnum {
     YwcOrderStatus("已完成", 3),
     YqxOrderStatus("已取消", 4);
 
+    //帮客发布订单的各种状态
+
+
 
     private String name;
     private Integer value;

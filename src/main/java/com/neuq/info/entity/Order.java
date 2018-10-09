@@ -102,6 +102,9 @@ public class Order{
     @ApiModelProperty(value = "查询的终止精度，范围查询使用")
     private BigDecimal maxlat;
 
+    @ApiModelProperty(value = "图片地址")
+    private String picUrls;
+
     public double getAllFee() {
         return fee + extraFee;
     }

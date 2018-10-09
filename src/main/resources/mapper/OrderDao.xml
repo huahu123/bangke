@@ -16,7 +16,7 @@
       RestaurantPeople, QueueType, StartTime,
       ArriveTime, ContactName, PhoneNum,
       Gender, Comment, Fee, 
-      ExtraFee, CustomerId, ProviderId,PayCode
+      ExtraFee, CustomerId, ProviderId,PayCode, PicUrls
       )
     values (#{orderId,jdbcType=VARCHAR}, #{restaurantName,jdbcType=VARCHAR},
       #{restaurantLocation,jdbcType=VARCHAR}, #{longitude,jdbcType=DECIMAL}, #{latitude,jdbcType=DECIMAL}, 
@@ -24,14 +24,13 @@
       #{arriveTime,jdbcType=TIMESTAMP}, #{contactName,jdbcType=VARCHAR}, #{phoneNum,jdbcType=VARCHAR}, 
       #{gender,jdbcType=TINYINT}, #{comment,jdbcType=VARCHAR}, #{fee,jdbcType=DOUBLE}, 
       #{extraFee,jdbcType=DOUBLE}, #{customerId,jdbcType=BIGINT}, #{providerId,jdbcType=BIGINT},
-      #{payCode, jdbcType=VARCHAR}
+      #{payCode, jdbcType=VARCHAR}, #{picUrls, jdbcType=VARCHAR}
       )
   </insert>
 
   <select id="selectByOrderId" parameterType="java.lang.String" resultType="com.neuq.info.entity.Order">
 
-    select
-    <include refid="Base_Column_List" />
+    select *
     from T_Order
     where OrderId = #{orderId,jdbcType=VARCHAR}
   </select>
@@ -88,7 +87,8 @@
     PayStatus = #{payStatus,jdbcType=INTEGER},
     UpdateTime = #{updateTime,jdbcType=TIMESTAMP},
     CreateTime = #{createTime,jdbcType=TIMESTAMP},
-    PayCode = #{payCode, jdbcType=VARCHAR}
+    PayCode = #{payCode, jdbcType=VARCHAR},
+    PicUrls = #{picUrls, jdbcType=VARCHAR}
     where OrderId = #{orderId,jdbcType=VARCHAR}
   </update>
   
